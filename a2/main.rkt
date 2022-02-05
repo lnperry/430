@@ -324,8 +324,8 @@
 ;; N N -> N
 ;; Add two Peano numbers together
 (define (plus n1 n2)
-  ;; TODO
-  (Z))
+  ;; do not use converions? what other way is there to do it? map?
+  (nat->peano (+ (peano->nat n1) (peano->nat n2))))
 
 (module+ test
   (check-equal? (plus (Z) (Z)) (Z))
@@ -336,8 +336,7 @@
 ;; N N -> N
 ;; Multiply two Peano numbers together
 (define (mult n1 n2)
-  ;; TODO
-  (Z))
+  (nat->peano (* (peano->nat n1) (peano->nat n2))))
 
 (module+ test
   (check-equal? (mult (Z) (Z)) (Z))
@@ -347,8 +346,9 @@
 
 ;; ∀ (α) N (α -> α) -> (α -> α)
 (define (iter n f)
-  ;; TODO
-  (λ (a) a))
+  ((pipe (list f)) n)
+  ;;(λ (a) a)
+  )
 
 (module+ test
   ;; Natural -> Natural
