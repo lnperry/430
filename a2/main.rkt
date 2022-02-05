@@ -134,8 +134,7 @@
 ;; [Listof Number] -> Natural
 ;; Compute the length of given list of numbers
 (define (length-lon ls)
-  ;; TODO
-  0)
+  (length ls))
 
 (module+ test
   (check-equal? (length-lon '()) 0)
@@ -146,8 +145,9 @@
 ;; [Listof Number] -> Number
 ;; Compute the sum of given list of numbers
 (define (sum ls)
-  ;; TODO
-  0)
+  (match ls
+    ['() 0]
+    [(cons n ls) (+ n (sum ls))]))
 
 (module+ test
   (check-equal? (sum '()) 0)
@@ -158,9 +158,9 @@
 ;; [Listof Number] [Listof Number] -> [Listof Number]
 ;; Compute the pairwise sum of given list of numbers
 ;; ASSUME: lists have equal length
+
 (define (zip-add ls1 ls2)
-  ;; TODO
-  '())
+  (map + ls1 ls2))
 
 (module+ test
   (check-equal? (zip-add '() '()) '())
@@ -171,8 +171,7 @@
 ;; Compute the pairwise list of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-lon ls1 ls2)
-  ;; TODO
-  '())
+  (map list ls1 ls2))
 
 (module+ test
   (check-equal? (zip-lon '() '()) '())
@@ -182,8 +181,7 @@
 ;; [Pairof Real [Listof Real]] -> Real
 ;; Compute max element of non-empty list of numbers
 (define (max-lon xs)
-  ;; TODO
-  0)
+  (foldl max (first xs) (rest xs)))
 
 (module+ test
   (check-equal? (max-lon '(1)) 1)
