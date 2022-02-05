@@ -29,8 +29,9 @@
 
 ;; Natural -> Natural
 ;; Compute n!
+
 (define (fact n)
-    (match n
+  (match n
       [0 1]
       [n (* n (fact (- n 1)))]))
 
@@ -46,8 +47,7 @@
     (match n
       [0 0]
       [1 1]
-      [2 1]
-      [n (+ (fib (- n 1))) (fib (- n 2)))]))
+      [n (+ (fib (- n 1)) (fib (- n 2)))]))
 
 (module+ test
   (check-equal? (fib 0) 0)
@@ -60,6 +60,7 @@
   (check-equal? (fib 20) 6765))
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; String functions
 
@@ -68,8 +69,7 @@
 ;; String String -> String
 ;; Select the longer of the two strings (or first if same length)
 (define (longer s1 s2)
-  ;; TODO
-  s1)
+  (if (< (string-length s1) (string-length s2)) s2 s1))
 
 (module+ test
   (check-equal? (longer "" "") "")
@@ -80,8 +80,7 @@
 ;; String -> [Listof String]
 ;; Explode a string into a list of length-1 strings
 (define (explode s)
-  ;; TODO
-  '())
+  (map string (string->list s)))
 
 (module+ test
   (check-equal? (explode "") '())
@@ -90,9 +89,29 @@
 
 ;; String -> [Listof [List String String]]
 ;; Compute list of bigrams (pairs of adjacent letters) in a string
+
+
 (define (bigrams s)
-  ;; TODO
-  '())
+  (define e (explode s))
+  (match e
+    ['() '()]
+    [(list a) '()]
+    [_ (m (explode s) '())]
+  ))
+  
+
+
+
+(define (m s acc)
+  (match s
+    ['() acc]
+    [(list a) acc]
+    [(list a b c ...)
+     (define callee (let-values ([(x y) (split-at s 2)])
+       (list x (append (list (second x)) y))))
+     ;;(append (append acc (first callee)) (m s (second callee)))
+     (cons (append acc (first callee)) (m (second callee) acc)) 
+     ]))
 
 (module+ test
   (check-equal? (bigrams "") '())
