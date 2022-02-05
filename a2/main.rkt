@@ -7,7 +7,7 @@
 ;; I pledge on my honor that I have not given or received any
 ;; unauthorized assistance on this assignment.
 ;;
-;; Name: Luke Perry
+;; Name: TODO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; These are a series of finger-exercise programs to help you:
@@ -29,7 +29,6 @@
 
 ;; Natural -> Natural
 ;; Compute n!
-
 (define (fact n)
   (match n
       [0 1]
@@ -44,7 +43,7 @@
 ;; Natural -> Natural
 ;; Compute nth Fibonnaci number
 (define (fib n)
-    (match n
+  (match n
       [0 0]
       [1 1]
       [n (+ (fib (- n 1)) (fib (- n 2)))]))
@@ -58,7 +57,6 @@
   (check-equal? (fib 5) 5)
   (check-equal? (fib 6) 8)
   (check-equal? (fib 20) 6765))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,8 +87,6 @@
 
 ;; String -> [Listof [List String String]]
 ;; Compute list of bigrams (pairs of adjacent letters) in a string
-
-
 (define (bigrams s)
   (define e (explode s))
   (match e
@@ -99,9 +95,6 @@
     [_ (m (explode s) '())]
   ))
   
-
-
-
 (define (m s acc)
   (match s
     ['() acc]
@@ -158,7 +151,6 @@
 ;; [Listof Number] [Listof Number] -> [Listof Number]
 ;; Compute the pairwise sum of given list of numbers
 ;; ASSUME: lists have equal length
-
 (define (zip-add ls1 ls2)
   (map + ls1 ls2))
 
@@ -193,8 +185,7 @@
 ;; Sort list into ascending order
 ;; HINT: do insertion sort by writing and using the helper below
 (define (sort-asc xs)
-  ;; TODO
-  xs)
+  (sort < xs))
 
 (module+ test
   (check-equal? (sort-asc '()) '())
@@ -207,8 +198,13 @@
 ;; Insert number into sorted list
 ;; ASSUME: given list is sorted in ascending order
 (define (insert-asc n xs)
-  ;; TODO
-  xs)
+  (cond ((null? xs)          ; if the list is empty
+         (list n))        ; then return a single-element list
+        ((<= n (car xs)) ; if current element >= value
+         (cons n xs))    ; insert value in current position
+        (else                 ; otherwise keep building the list
+         (cons (car xs)      ; by adding current element
+               (insert-asc n (cdr xs))))))
 
 (module+ test
   (check-equal? (insert-asc 5 '()) '(5))
@@ -222,8 +218,7 @@
 ;; ∀ (α) (α -> Real) [Pairof α [Listof α]] -> α
 ;; Find element that minimizes the given measure (take first if more than one)
 (define (minimize f xs)
-  ;; TODO
-  (first xs))
+(argmin f xs))
 
 (module+ test
   (check-equal? (minimize abs '(1 -2 3)) 1)
@@ -234,9 +229,11 @@
 ;; Sort list in ascending order according to given comparison
 ;; ENSURE: result is stable
 (define (sort < xs)
-  ;; TODO
-  xs)
-
+  (cond ((null? xs)          
+         xs)       
+        (else
+         (define sorted (sort < (rest xs)))
+         (insert-asc (first xs) sorted))))
 
 (module+ test
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
