@@ -206,15 +206,6 @@
          (cons (car xs)      ; by adding current element
                (insert-asc n (cdr xs))))))
 
-(define (insert-asc-double n fx xs)
-  (cond ((null? xs)          ; if the list is empty
-         (list n))        ; then return a single-element list
-        ((fx n (car xs)) ; if current element >= value
-         (cons n xs))    ; insert value in current position
-        (else                 ; otherwise keep building the list
-         (cons (car xs)      ; by adding current element
-               (insert-asc-double n fx (cdr xs))))))
-
 (module+ test
   (check-equal? (insert-asc 5 '()) '(5))
   (check-equal? (insert-asc 5 '(7)) '(5 7))
@@ -267,8 +258,7 @@
 ;; Zip together lists into a list of lists
 ;; ASSUME: lists are the same length
 (define (zip as bs)
-  ;; TODO
-  '())
+  (map list as bs))
 
 (module+ test
   (check-equal? (zip '() '()) '())
@@ -280,15 +270,17 @@
 ;; Compose a list of functions into a single function
 ;; ((pipe (list f1 f2 f3)) x) ≡ (f1 (f2 (f3 x)))
 (define (pipe fs)
-  ;; TODO
-  (λ (x) x))
+  (lambda (x) (apply-functions fs x)))
 
 (module+ test
   (check-equal? ((pipe (list number->string sqr add1)) 5) "36")
   (check-equal? ((pipe (list number->string add1 sqr)) 5) "26")
-  (check-equal? ((pipe (list string-length number->string add1 sqr)) 5) 2))
+  (check-equal? ((pipe (list string-length number->string add1 sqr)) 5) 2)) 	
 
-
+(define (apply-functions lof acc)
+  (foldr (lambda (f acc) (f acc))
+         acc
+         lof))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Peano numbers
 
@@ -305,8 +297,7 @@
 ;; Natural -> N
 ;; Convert natural to Peano
 (define (nat->peano n)
-  ;; TODO
-  (Z))
+  ((pipe (make-list n S)) (Z)))
 
 (module+ test
   (check-equal? (nat->peano 0) (Z))
@@ -317,8 +308,10 @@
 ;; N -> Natural
 ;; Convert Peano to natural
 (define (peano->nat n)
-  ;; TODO
-  0)
+  (match n
+    [(S n) (+ 1 (peano->nat n))]
+    [(Z) 0]))
+
 
 (module+ test
   (check-equal? (peano->nat (Z)) 0)
