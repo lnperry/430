@@ -200,11 +200,20 @@
 (define (insert-asc n xs)
   (cond ((null? xs)          ; if the list is empty
          (list n))        ; then return a single-element list
-        ((<= n (car xs)) ; if current element >= value
+        ((< n (car xs)) ; if current element >= value
          (cons n xs))    ; insert value in current position
         (else                 ; otherwise keep building the list
          (cons (car xs)      ; by adding current element
                (insert-asc n (cdr xs))))))
+
+(define (insert-asc-double n fx xs)
+  (cond ((null? xs)          ; if the list is empty
+         (list n))        ; then return a single-element list
+        ((fx n (car xs)) ; if current element >= value
+         (cons n xs))    ; insert value in current position
+        (else                 ; otherwise keep building the list
+         (cons (car xs)      ; by adding current element
+               (insert-asc-double n fx (cdr xs))))))
 
 (module+ test
   (check-equal? (insert-asc 5 '()) '(5))
@@ -228,21 +237,32 @@
 ;; ∀ (α) (α α -> Boolean) [Listof α] -> [Listof α]
 ;; Sort list in ascending order according to given comparison
 ;; ENSURE: result is stable
-(define (sort < xs)
-  (cond ((null? xs)          
-         xs)       
-        (else
-         (define sorted (sort < (rest xs)))
-         (insert-asc (first xs) sorted))))
+(define (qsrt iarr lt)
+  (cond
+    [(< 1 (length iarr))
+     (let (
+           [pivot (first iarr)]
+           [gt (lambda (l r) (not (or (lt l r) (equal? l r))))])
+       (append
+        (qsrt (filter (lambda (x) (lt x pivot)) iarr) lt)
+        (filter (lambda (x) (equal? x pivot)) iarr)
+        (qsrt (filter (lambda (x) (gt x pivot)) iarr) lt)))]
+    [else iarr]))
 
+(define (sort < xs)
+  (qsrt xs <)
+  )
 (module+ test
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
   (check-equal? (sort string<? '("d" "abc" "efg")) '("abc" "d" "efg"))
   (check-equal?
-   (sort (λ (s1 s2)
+   (sort (lambda (s1 s2)
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
+(qsrt '("efg" "d" "abc") (lambda (s1 s2)
+           (< (string-length s1) (string-length s2)))
+         )
 ;; ∀ (α β) [Listof α] [Listof β] -> [Listof [List α β]]
 ;; Zip together lists into a list of lists
 ;; ASSUME: lists are the same length
