@@ -346,8 +346,8 @@
 
 ;; ∀ (α) N (α -> α) -> (α -> α)
 (define (iter n f)
-  ((pipe (list f)) n)
-  ;;(λ (a) a)
+  ;;((pipe (list f)) n)
+  (λ (a) a)
   )
 
 (module+ test
@@ -396,8 +396,12 @@
 ;; BTNumber -> Natural
 ;; Compute the height of a binary tree (leaf has height 0)
 (define (btn-height bt)
-  ;; TODO
-  0)
+  (match bt 
+    [(leaf) 0]
+    [(node n left right)
+      (+ 1 (max (btn-height left) 
+                (btn-height right)))]))
+  
 
 (module+ test
   (check-equal? (btn-height (leaf)) 0)
@@ -407,8 +411,11 @@
 ;; BTNumber -> Natural
 ;; Count the nodes of a binary tree
 (define (btn-count bt)
-  ;; TODO
-  0)
+  (match bt 
+    [(leaf) 0]
+    [(node n left right)
+      (+ 1 (+ (btn-height left) 
+              (btn-height right)))]))
 
 (module+ test
   (check-equal? (btn-count (leaf)) 0)
@@ -417,9 +424,14 @@
 
 ;; BTNumber -> BTNumber
 ;; Compute the mirror image of binary tree
+
+;;(define (btn-mirror bt)
+;;  (define-values (bt_copy _) (struct-info (bt)))
+;;    bt_copy)
+
 (define (btn-mirror bt)
-  ;; TODO
-  (leaf))
+  (define bt2 bt)
+    bt2)
 
 (module+ test
   (check-equal? (btn-mirror (leaf)) (leaf))
