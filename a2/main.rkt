@@ -243,6 +243,7 @@
 (define (sort < xs)
   (quicksort xs <)
   )
+
 (module+ test
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
   (check-equal? (sort string<? '("d" "abc" "efg")) '("abc" "d" "efg"))
@@ -442,8 +443,11 @@
 ;; BTNumber -> Number
 ;; Sum the numbers of a binary tree
 (define (btn-sum bt)
-  ;; TODO
-  0)
+   (match bt 
+    [(leaf) 0]
+    [(node n left right)
+      (+ n (+ (btn-height left) 
+              (btn-height right)))]))
 
 (module+ test
   (check-equal? (btn-sum (leaf)) 0)
@@ -463,9 +467,12 @@
 
 ;; BTNumber Number -> Boolean
 ;; Does the bt contain number n?
-(define (btn-contains? bt n)
-  ;; TODO
-  #f)
+(define (btn-contains? bt x)
+   (match bt 
+    [(leaf) #f]
+    [(node n left right)
+     (cond[(= n x) #t]
+          [else (or (btn-contains? left x) (btn-contains? left x))])]))
 
 (module+ test
   (check-equal? (btn-contains? (leaf) 8) #f)
@@ -477,8 +484,13 @@
 ;; Generate the list of numbers in bt in preorder
 ;; HINT: append is a function that might be helpful
 (define (btn-preorder btn)
-  ;; TODO
-  '())
+  (btn-preorder-helper btn '()))
+
+(define (btn-preorder-helper btn acc)
+   (match btn 
+    [(leaf) '()]
+    [(node n left right)
+     (cons acc (list n (btn-preorder-helper left acc) (btn-preorder-helper right acc)))]))
 
 (module+ test
   (check-equal? (btn-preorder (leaf)) '())
