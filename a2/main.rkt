@@ -228,20 +228,20 @@
 ;; ∀ (α) (α α -> Boolean) [Listof α] -> [Listof α]
 ;; Sort list in ascending order according to given comparison
 ;; ENSURE: result is stable
-(define (qsrt iarr lt)
+(define (quicksort sorted cmp)
   (cond
-    [(< 1 (length iarr))
+    [(< 1 (length sorted))
      (let (
-           [pivot (first iarr)]
-           [gt (lambda (l r) (not (or (lt l r) (equal? l r))))])
+           [pivot (first sorted)]
+           [gt (lambda (l r) (not (or (cmp l r) (equal? l r))))])
        (append
-        (qsrt (filter (lambda (x) (lt x pivot)) iarr) lt)
-        (filter (lambda (x) (equal? x pivot)) iarr)
-        (qsrt (filter (lambda (x) (gt x pivot)) iarr) lt)))]
-    [else iarr]))
+        (quicksort (filter (lambda (x) (cmp x pivot)) sorted) cmp)
+        (filter (lambda (x) (equal? x pivot)) sorted)
+        (quicksort (filter (lambda (x) (gt x pivot)) sorted) cmp)))]
+    [else sorted]))
 
 (define (sort < xs)
-  (qsrt xs <)
+  (quicksort xs <)
   )
 (module+ test
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
@@ -251,7 +251,7 @@
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
-(qsrt '("efg" "d" "abc") (lambda (s1 s2)
+(quicksort '("efg" "d" "abc") (lambda (s1 s2)
            (< (string-length s1) (string-length s2)))
          )
 ;; ∀ (α β) [Listof α] [Listof β] -> [Listof [List α β]]
