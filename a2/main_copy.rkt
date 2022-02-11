@@ -7,7 +7,7 @@
 ;; I pledge on my honor that I have not given or received any
 ;; unauthorized assistance on this assignment.
 ;;
-;; Name: Luke Perry
+;; Name: TODO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; These are a series of finger-exercise programs to help you:
@@ -30,9 +30,8 @@
 ;; Natural -> Natural
 ;; Compute n!
 (define (fact n)
-  (match n
-      [0 1]
-      [n (* n (fact (- n 1)))]))
+  ;; TODO
+  1)
 
 (module+ test
   (check-equal? (fact 0) 1)
@@ -43,10 +42,8 @@
 ;; Natural -> Natural
 ;; Compute nth Fibonnaci number
 (define (fib n)
-  (match n
-      [0 0]
-      [1 1]
-      [n (+ (fib (- n 1)) (fib (- n 2)))]))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (fib 0) 0)
@@ -67,10 +64,8 @@
 ;; String String -> String
 ;; Select the longer of the two strings (or first if same length)
 (define (longer s1 s2)
-  (cond
-    [(< (string-length s1)(string-length s2)) s2]
-    [else s1])
- )
+  ;; TODO
+  s1)
 
 (module+ test
   (check-equal? (longer "" "") "")
@@ -81,8 +76,8 @@
 ;; String -> [Listof String]
 ;; Explode a string into a list of length-1 strings
 (define (explode s)
-  (define s_lst (string->list s))
-  (map (lambda (x) (make-string 1 x)) s_lst))
+  ;; TODO
+  '())
 
 (module+ test
   (check-equal? (explode "") '())
@@ -91,15 +86,10 @@
 
 ;; String -> [Listof [List String String]]
 ;; Compute list of bigrams (pairs of adjacent letters) in a string
-(define (bigrams-h lst)
-  (define s_len (length lst))
-  (cond
-    [(<= s_len 1) empty]
-    [else (cons (list (first lst)(second lst)) (bigrams-h(rest lst)))]))
-	
 (define (bigrams s)
-  (bigrams-h (explode s)))
-  
+  ;; TODO
+  '())
+
 (module+ test
   (check-equal? (bigrams "") '())
   (check-equal? (bigrams "a") '())
@@ -121,9 +111,8 @@
 ;; [Listof Number] -> Natural
 ;; Compute the length of given list of numbers
 (define (length-lon ls)
-  (match ls
-    ['() 0]
-    [(cons n ls) (+ 1 (length-lon ls))]))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (length-lon '()) 0)
@@ -134,9 +123,8 @@
 ;; [Listof Number] -> Number
 ;; Compute the sum of given list of numbers
 (define (sum ls)
-  (match ls
-    ['() 0]
-    [(cons n ls) (+ n (sum ls))]))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (sum '()) 0)
@@ -148,9 +136,8 @@
 ;; Compute the pairwise sum of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-add ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (+ n (first ls2)) (zip-add ls (rest ls2)))]))
+  ;; TODO
+  '())
 
 (module+ test
   (check-equal? (zip-add '() '()) '())
@@ -161,9 +148,8 @@
 ;; Compute the pairwise list of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-lon ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (list n (first ls2)) (zip-lon ls (rest ls2)))]))
+  ;; TODO
+  '())
 
 (module+ test
   (check-equal? (zip-lon '() '()) '())
@@ -173,7 +159,8 @@
 ;; [Pairof Real [Listof Real]] -> Real
 ;; Compute max element of non-empty list of numbers
 (define (max-lon xs)
-  (foldl max (first xs) (rest xs)))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (max-lon '(1)) 1)
@@ -185,7 +172,8 @@
 ;; Sort list into ascending order
 ;; HINT: do insertion sort by writing and using the helper below
 (define (sort-asc xs)
-  (sort < xs))
+  ;; TODO
+  xs)
 
 (module+ test
   (check-equal? (sort-asc '()) '())
@@ -198,13 +186,8 @@
 ;; Insert number into sorted list
 ;; ASSUME: given list is sorted in ascending order
 (define (insert-asc n xs)
-  (cond ((null? xs)          ; if the list is empty
-         (list n))        ; then return a single-element list
-        ((< n (car xs)) ; if current element >= value
-         (cons n xs))    ; insert value in current position
-        (else                 ; otherwise keep building the list
-         (cons (car xs)      ; by adding current element
-               (insert-asc n (cdr xs))))))
+  ;; TODO
+  xs)
 
 (module+ test
   (check-equal? (insert-asc 5 '()) '(5))
@@ -218,7 +201,8 @@
 ;; ∀ (α) (α -> Real) [Pairof α [Listof α]] -> α
 ;; Find element that minimizes the given measure (take first if more than one)
 (define (minimize f xs)
-(argmin f xs))
+  ;; TODO
+  (first xs))
 
 (module+ test
   (check-equal? (minimize abs '(1 -2 3)) 1)
@@ -228,27 +212,16 @@
 ;; ∀ (α) (α α -> Boolean) [Listof α] -> [Listof α]
 ;; Sort list in ascending order according to given comparison
 ;; ENSURE: result is stable
-(define (quicksort sorted cmp)
-  (cond
-    [(< 1 (length sorted))
-     (let (
-           [pivot (first sorted)]
-           [gt (lambda (l r) (not (or (cmp l r) (equal? l r))))])
-       (append
-        (quicksort (filter (lambda (x) (cmp x pivot)) sorted) cmp)
-        (filter (lambda (x) (equal? x pivot)) sorted)
-        (quicksort (filter (lambda (x) (gt x pivot)) sorted) cmp)))]
-    [else sorted]))
-
 (define (sort < xs)
-  (quicksort xs <)
-  )
+  ;; TODO
+  xs)
+
 
 (module+ test
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
   (check-equal? (sort string<? '("d" "abc" "efg")) '("abc" "d" "efg"))
   (check-equal?
-   (sort (lambda (s1 s2)
+   (sort (λ (s1 s2)
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
@@ -256,7 +229,8 @@
 ;; Zip together lists into a list of lists
 ;; ASSUME: lists are the same length
 (define (zip as bs)
-  (map list as bs))
+  ;; TODO
+  '())
 
 (module+ test
   (check-equal? (zip '() '()) '())
@@ -268,17 +242,15 @@
 ;; Compose a list of functions into a single function
 ;; ((pipe (list f1 f2 f3)) x) ≡ (f1 (f2 (f3 x)))
 (define (pipe fs)
-  (lambda (x) (apply-functions fs x)))
+  ;; TODO
+  (λ (x) x))
 
 (module+ test
   (check-equal? ((pipe (list number->string sqr add1)) 5) "36")
   (check-equal? ((pipe (list number->string add1 sqr)) 5) "26")
-  (check-equal? ((pipe (list string-length number->string add1 sqr)) 5) 2)) 	
+  (check-equal? ((pipe (list string-length number->string add1 sqr)) 5) 2))
 
-(define (apply-functions lof acc)
-  (foldr (lambda (f acc) (f acc))
-         acc
-         lof))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Peano numbers
 
@@ -295,7 +267,8 @@
 ;; Natural -> N
 ;; Convert natural to Peano
 (define (nat->peano n)
-  ((pipe (make-list n S)) (Z)))
+  ;; TODO
+  (Z))
 
 (module+ test
   (check-equal? (nat->peano 0) (Z))
@@ -306,10 +279,8 @@
 ;; N -> Natural
 ;; Convert Peano to natural
 (define (peano->nat n)
-  (match n
-    [(S n) (+ 1 (peano->nat n))]
-    [(Z) 0]))
-
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (peano->nat (Z)) 0)
@@ -322,8 +293,8 @@
 ;; N N -> N
 ;; Add two Peano numbers together
 (define (plus n1 n2)
-  ;; do not use converions? what other way is there to do it? map?
-  (nat->peano (+ (peano->nat n1) (peano->nat n2))))
+  ;; TODO
+  (Z))
 
 (module+ test
   (check-equal? (plus (Z) (Z)) (Z))
@@ -334,7 +305,8 @@
 ;; N N -> N
 ;; Multiply two Peano numbers together
 (define (mult n1 n2)
-  (nat->peano (* (peano->nat n1) (peano->nat n2))))
+  ;; TODO
+  (Z))
 
 (module+ test
   (check-equal? (mult (Z) (Z)) (Z))
@@ -344,9 +316,8 @@
 
 ;; ∀ (α) N (α -> α) -> (α -> α)
 (define (iter n f)
-  (match n
-    [(Z) (lambda (x) x)]
-    [(S a) (lambda (x) (f ((iter a f) x)))]))
+  ;; TODO
+  (λ (a) a))
 
 (module+ test
   ;; Natural -> Natural
@@ -394,12 +365,8 @@
 ;; BTNumber -> Natural
 ;; Compute the height of a binary tree (leaf has height 0)
 (define (btn-height bt)
-  (match bt 
-    [(leaf) 0]
-    [(node n left right)
-      (+ 1 (max (btn-height left) 
-                (btn-height right)))]))
-  
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (btn-height (leaf)) 0)
@@ -409,11 +376,8 @@
 ;; BTNumber -> Natural
 ;; Count the nodes of a binary tree
 (define (btn-count bt)
-  (match bt 
-    [(leaf) 0]
-    [(node n left right)
-      (+ 1 (+ (btn-height left) 
-              (btn-height right)))]))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (btn-count (leaf)) 0)
@@ -422,15 +386,9 @@
 
 ;; BTNumber -> BTNumber
 ;; Compute the mirror image of binary tree
-
-;;(define (btn-mirror bt)
-;;  (define-values (bt_copy _) (struct-info (bt)))
-;;    bt_copy)
-;
 (define (btn-mirror bt)
-  (match bt
-    [(leaf) (leaf)]
-    [(node n left right) (node n (btn-mirror right) (btn-mirror left))]))
+  ;; TODO
+  (leaf))
 
 (module+ test
   (check-equal? (btn-mirror (leaf)) (leaf))
@@ -441,11 +399,8 @@
 ;; BTNumber -> Number
 ;; Sum the numbers of a binary tree
 (define (btn-sum bt)
-   (match bt 
-    [(leaf) 0]
-    [(node n left right)
-      (+ n (+ (btn-height left) 
-              (btn-height right)))]))
+  ;; TODO
+  0)
 
 (module+ test
   (check-equal? (btn-sum (leaf)) 0)
@@ -455,9 +410,8 @@
 ;; Natural Number -> BTNumber
 ;; Generate a full bt of height h containing given number n at each node
 (define (btn-gen-full h n)
-  (match h
-    [0 (leaf)]
-    [x (node n (btn-gen-full (- x 1) n) (btn-gen-full (- x 1) n))]))
+  ;; TODO
+  (leaf))
 
 (module+ test
   (check-equal? (btn-gen-full 0 8) (leaf))
@@ -467,9 +421,8 @@
 ;; BTNumber Number -> Boolean
 ;; Does the bt contain number n?
 (define (btn-contains? bt n)
-  (match bt
-    [(leaf) #f]
-    [(node x left right) (if (= x n) #t (or (btn-contains? left n) (btn-contains? right n)))]))
+  ;; TODO
+  #f)
 
 (module+ test
   (check-equal? (btn-contains? (leaf) 8) #f)
@@ -481,13 +434,8 @@
 ;; Generate the list of numbers in bt in preorder
 ;; HINT: append is a function that might be helpful
 (define (btn-preorder btn)
-  (btn-preorder-helper btn))
-
-(define (btn-preorder-helper btn)
-   (match btn 
-    [(leaf) '()]
-    [(node n left right)
-     (cons n (append (btn-preorder-helper left) (btn-preorder-helper right)))]))
+  ;; TODO
+  '())
 
 (module+ test
   (check-equal? (btn-preorder (leaf)) '())
@@ -588,20 +536,9 @@
 
 ;; Expr -> [Listof Integer]
 ;; Computes a list of all integer literals that appear in the expression
-
 (define (expr-integers e)
-  (expr-integers-h e))
-
-(define (expr-integers-h e)
-  (match e
-    [(Int i) (list i)]
-    [(Bool b) '()] 
-    [(Var v) '()]
-    [(App e1 e2)
-     (append (expr-integers-h e2)
-          (expr-integers-h e1))]
-    [(Lam x e)
-     (expr-integers-h e)]))
+  ;; TODO
+  '())
 
 (module+ test
   (check list-set-equal? (expr-integers (sexpr->expr 123)) '(123))
@@ -612,12 +549,8 @@
 ;; Expr -> [Listof Variable]
 ;; Compute a list of all lambda-bound variables in the expression
 (define (expr-lambda-vars e)
-  (match e
-    [(Int i) '()]
-    [(Bool b) '()]
-    [(Var v) '()]
-    [(App e1 e2) (append (expr-lambda-vars e2) (expr-lambda-vars e1))]
-    [(Lam x e1) (append (list x) (expr-lambda-vars e1))]))
+  ;; TODO
+  '())
 
 (module+ test
   (check list-set-equal? (expr-lambda-vars (sexpr->expr 123)) '())
@@ -629,12 +562,9 @@
 ;; Compute a list of all free variables, i.e. variables which occur outside
 ;; of any lambda that binds them.
 (define (expr-free-vars e)
-  (match e
-    [(Int i) '()]
-    [(Bool b) '()]
-    [(Var v) (list v)]
-    [(App e1 e2) (append (expr-free-vars e2) (expr-free-vars e1))]
-    [(Lam x e1) (remove x (expr-free-vars e1))]))
+  ;; TODO
+  '())
+
 (module+ test
   (check list-set-equal? (expr-free-vars (sexpr->expr 123)) '())
   (check list-set-equal? (expr-free-vars (sexpr->expr 'x)) '(x))

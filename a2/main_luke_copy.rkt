@@ -98,6 +98,7 @@
     [else (cons (list (first lst)(second lst)) (bigrams-h(rest lst)))]))
 	
 (define (bigrams s)
+  ;; TODO
   (bigrams-h (explode s)))
   
 (module+ test
@@ -218,7 +219,12 @@
 ;; ∀ (α) (α -> Real) [Pairof α [Listof α]] -> α
 ;; Find element that minimizes the given measure (take first if more than one)
 (define (minimize f xs)
-(argmin f xs))
+  ;; TODO
+  (match (map f xs)
+    ['() '()]
+    [(cons n ls) (minimize_helper n (first xs) ls (rest xs))]
+    )
+  )
 
 (module+ test
   (check-equal? (minimize abs '(1 -2 3)) 1)
@@ -629,12 +635,14 @@
 ;; Compute a list of all free variables, i.e. variables which occur outside
 ;; of any lambda that binds them.
 (define (expr-free-vars e)
+  ;; TODO
   (match e
     [(Int i) '()]
     [(Bool b) '()]
     [(Var v) (list v)]
     [(App e1 e2) (append (expr-free-vars e2) (expr-free-vars e1))]
-    [(Lam x e1) (remove x (expr-free-vars e1))]))
+    [(Lam x e1) (remove x (expr-free-vars e1))])
+  )
 (module+ test
   (check list-set-equal? (expr-free-vars (sexpr->expr 123)) '())
   (check list-set-equal? (expr-free-vars (sexpr->expr 'x)) '(x))

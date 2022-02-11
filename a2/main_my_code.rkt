@@ -7,7 +7,7 @@
 ;; I pledge on my honor that I have not given or received any
 ;; unauthorized assistance on this assignment.
 ;;
-;; Name: Luke Perry
+;; Name: TODO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; These are a series of finger-exercise programs to help you:
@@ -67,10 +67,7 @@
 ;; String String -> String
 ;; Select the longer of the two strings (or first if same length)
 (define (longer s1 s2)
-  (cond
-    [(< (string-length s1)(string-length s2)) s2]
-    [else s1])
- )
+  (if (< (string-length s1) (string-length s2)) s2 s1))
 
 (module+ test
   (check-equal? (longer "" "") "")
@@ -81,8 +78,7 @@
 ;; String -> [Listof String]
 ;; Explode a string into a list of length-1 strings
 (define (explode s)
-  (define s_lst (string->list s))
-  (map (lambda (x) (make-string 1 x)) s_lst))
+  (map string (string->list s)))
 
 (module+ test
   (check-equal? (explode "") '())
@@ -91,15 +87,25 @@
 
 ;; String -> [Listof [List String String]]
 ;; Compute list of bigrams (pairs of adjacent letters) in a string
-(define (bigrams-h lst)
-  (define s_len (length lst))
-  (cond
-    [(<= s_len 1) empty]
-    [else (cons (list (first lst)(second lst)) (bigrams-h(rest lst)))]))
-	
 (define (bigrams s)
-  (bigrams-h (explode s)))
+  (define e (explode s))
+  (match e
+    ['() '()]
+    [(list a) '()]
+    [_ (m (explode s) '())]
+  ))
   
+(define (m s acc)
+  (match s
+    ['() acc]
+    [(list a) acc]
+    [(list a b c ...)
+     (define callee (let-values ([(x y) (split-at s 2)])
+       (list x (append (list (second x)) y))))
+     ;;(append (append acc (first callee)) (m s (second callee)))
+     (cons (append acc (first callee)) (m (second callee) acc)) 
+     ]))
+
 (module+ test
   (check-equal? (bigrams "") '())
   (check-equal? (bigrams "a") '())
@@ -121,9 +127,7 @@
 ;; [Listof Number] -> Natural
 ;; Compute the length of given list of numbers
 (define (length-lon ls)
-  (match ls
-    ['() 0]
-    [(cons n ls) (+ 1 (length-lon ls))]))
+  (length ls))
 
 (module+ test
   (check-equal? (length-lon '()) 0)
@@ -148,9 +152,7 @@
 ;; Compute the pairwise sum of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-add ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (+ n (first ls2)) (zip-add ls (rest ls2)))]))
+  (map + ls1 ls2))
 
 (module+ test
   (check-equal? (zip-add '() '()) '())
@@ -161,9 +163,7 @@
 ;; Compute the pairwise list of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-lon ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (list n (first ls2)) (zip-lon ls (rest ls2)))]))
+  (map list ls1 ls2))
 
 (module+ test
   (check-equal? (zip-lon '() '()) '())
@@ -252,6 +252,9 @@
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
+(quicksort '("efg" "d" "abc") (lambda (s1 s2)
+           (< (string-length s1) (string-length s2)))
+         )
 ;; ∀ (α β) [Listof α] [Listof β] -> [Listof [List α β]]
 ;; Zip together lists into a list of lists
 ;; ASSUME: lists are the same length
@@ -588,20 +591,15 @@
 
 ;; Expr -> [Listof Integer]
 ;; Computes a list of all integer literals that appear in the expression
-
 (define (expr-integers e)
-  (expr-integers-h e))
-
-(define (expr-integers-h e)
+  ;; TODO
   (match e
     [(Int i) (list i)]
-    [(Bool b) '()] 
+    [(Bool b) '()]
     [(Var v) '()]
-    [(App e1 e2)
-     (append (expr-integers-h e2)
-          (expr-integers-h e1))]
-    [(Lam x e)
-     (expr-integers-h e)]))
+    [(App e1 e2) (append (expr-integers e2) (expr-integers e1))]
+    [(Lam x e1) (expr-integers e1)])
+  )
 
 (module+ test
   (check list-set-equal? (expr-integers (sexpr->expr 123)) '(123))
@@ -612,12 +610,8 @@
 ;; Expr -> [Listof Variable]
 ;; Compute a list of all lambda-bound variables in the expression
 (define (expr-lambda-vars e)
-  (match e
-    [(Int i) '()]
-    [(Bool b) '()]
-    [(Var v) '()]
-    [(App e1 e2) (append (expr-lambda-vars e2) (expr-lambda-vars e1))]
-    [(Lam x e1) (append (list x) (expr-lambda-vars e1))]))
+  ;; TODO
+  '())
 
 (module+ test
   (check list-set-equal? (expr-lambda-vars (sexpr->expr 123)) '())
@@ -629,14 +623,12 @@
 ;; Compute a list of all free variables, i.e. variables which occur outside
 ;; of any lambda that binds them.
 (define (expr-free-vars e)
-  (match e
-    [(Int i) '()]
-    [(Bool b) '()]
-    [(Var v) (list v)]
-    [(App e1 e2) (append (expr-free-vars e2) (expr-free-vars e1))]
-    [(Lam x e1) (remove x (expr-free-vars e1))]))
+  ;; TODO
+  '())
+
 (module+ test
   (check list-set-equal? (expr-free-vars (sexpr->expr 123)) '())
   (check list-set-equal? (expr-free-vars (sexpr->expr 'x)) '(x))
   (check list-set-equal? (expr-free-vars (sexpr->expr '((lambda (x) x) 123))) '())
   (check list-set-equal? (expr-free-vars (sexpr->expr '((lambda (x) 42) 123))) '()))
+

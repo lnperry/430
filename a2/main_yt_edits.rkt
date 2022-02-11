@@ -98,6 +98,7 @@
     [else (cons (list (first lst)(second lst)) (bigrams-h(rest lst)))]))
 	
 (define (bigrams s)
+  ;; TODO
   (bigrams-h (explode s)))
   
 (module+ test
@@ -217,8 +218,15 @@
 
 ;; ∀ (α) (α -> Real) [Pairof α [Listof α]] -> α
 ;; Find element that minimizes the given measure (take first if more than one)
+(define (minimize-h num1 num2 list1 list2)
+  (match list1
+    ['() num2]
+    [(cons n ls) (if (< n num1) (minimize-h n (first list2) ls (rest list2)) (minimize-h num1 num2 ls (rest list2)))]))
+
 (define (minimize f xs)
-(argmin f xs))
+  (match (map f xs)
+    ['() '()]
+    [(cons n ls) (minimize-h n (first xs) ls (rest xs))]))
 
 (module+ test
   (check-equal? (minimize abs '(1 -2 3)) 1)
@@ -248,7 +256,7 @@
   (check-equal? (sort < '(1 -2 3)) '(-2 1 3))
   (check-equal? (sort string<? '("d" "abc" "efg")) '("abc" "d" "efg"))
   (check-equal?
-   (sort (lambda (s1 s2)
+   (sort (λ (s1 s2)
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
@@ -295,7 +303,9 @@
 ;; Natural -> N
 ;; Convert natural to Peano
 (define (nat->peano n)
-  ((pipe (make-list n S)) (Z)))
+  (match n
+    [0 (Z)]
+    [x (S (nat->peano (- n 1)))]))
 
 (module+ test
   (check-equal? (nat->peano 0) (Z))
@@ -307,9 +317,8 @@
 ;; Convert Peano to natural
 (define (peano->nat n)
   (match n
-    [(S n) (+ 1 (peano->nat n))]
-    [(Z) 0]))
-
+    [(Z) 0]
+    [(S sval) (+ (peano->nat sval) 1)]))
 
 (module+ test
   (check-equal? (peano->nat (Z)) 0)
@@ -322,8 +331,9 @@
 ;; N N -> N
 ;; Add two Peano numbers together
 (define (plus n1 n2)
-  ;; do not use converions? what other way is there to do it? map?
-  (nat->peano (+ (peano->nat n1) (peano->nat n2))))
+  (match n1
+    [(Z) n2]
+    [(S sval) (S (plus sval n2))]))
 
 (module+ test
   (check-equal? (plus (Z) (Z)) (Z))
@@ -334,7 +344,9 @@
 ;; N N -> N
 ;; Multiply two Peano numbers together
 (define (mult n1 n2)
-  (nat->peano (* (peano->nat n1) (peano->nat n2))))
+  (match n1
+    [(Z) (Z)]
+    [(S x) (plus n2 (mult x n2))]))
 
 (module+ test
   (check-equal? (mult (Z) (Z)) (Z))
@@ -346,7 +358,7 @@
 (define (iter n f)
   (match n
     [(Z) (lambda (x) x)]
-    [(S a) (lambda (x) (f ((iter a f) x)))]))
+    [(S sval) (lambda (x) (f ((iter sval f) x)))]))
 
 (module+ test
   ;; Natural -> Natural
@@ -394,11 +406,9 @@
 ;; BTNumber -> Natural
 ;; Compute the height of a binary tree (leaf has height 0)
 (define (btn-height bt)
-  (match bt 
+  (match bt
     [(leaf) 0]
-    [(node n left right)
-      (+ 1 (max (btn-height left) 
-                (btn-height right)))]))
+    [(node n left right) (max (+ (btn-height left) 1) (+ (btn-height right) 1))]))
   
 
 (module+ test
@@ -409,11 +419,9 @@
 ;; BTNumber -> Natural
 ;; Count the nodes of a binary tree
 (define (btn-count bt)
-  (match bt 
+  (match bt
     [(leaf) 0]
-    [(node n left right)
-      (+ 1 (+ (btn-height left) 
-              (btn-height right)))]))
+    [(node n left right) (+ (btn-count left) (+ (btn-count right) 1))]))
 
 (module+ test
   (check-equal? (btn-count (leaf)) 0)
