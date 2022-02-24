@@ -11,7 +11,7 @@
 ;; | (If Expr Expr Expr)
 
 
-;; type Op = 'add1 | 'sub1 | 'zero?
+;; type Op = 'abs | 'not | '- | 'add1 | 'sub1 | 'zero?
 
 
 
