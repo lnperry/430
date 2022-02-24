@@ -7,7 +7,7 @@
 ;; I pledge on my honor that I have not given or received any
 ;; unauthorized assistance on this assignment.
 ;;
-;; Name: Luke Perry
+;; Name: TODO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; These are a series of finger-exercise programs to help you:
@@ -67,10 +67,7 @@
 ;; String String -> String
 ;; Select the longer of the two strings (or first if same length)
 (define (longer s1 s2)
-  (cond
-    [(< (string-length s1)(string-length s2)) s2]
-    [else s1])
- )
+  (if (< (string-length s1) (string-length s2)) s2 s1))
 
 (module+ test
   (check-equal? (longer "" "") "")
@@ -81,8 +78,7 @@
 ;; String -> [Listof String]
 ;; Explode a string into a list of length-1 strings
 (define (explode s)
-  (define s_lst (string->list s))
-  (map (lambda (x) (make-string 1 x)) s_lst))
+  (map string (string->list s)))
 
 (module+ test
   (check-equal? (explode "") '())
@@ -91,15 +87,25 @@
 
 ;; String -> [Listof [List String String]]
 ;; Compute list of bigrams (pairs of adjacent letters) in a string
-(define (bigrams-h lst)
-  (define s_len (length lst))
-  (cond
-    [(<= s_len 1) empty]
-    [else (cons (list (first lst)(second lst)) (bigrams-h(rest lst)))]))
-	
 (define (bigrams s)
-  (bigrams-h (explode s)))
+  (define e (explode s))
+  (match e
+    ['() '()]
+    [(list a) '()]
+    [_ (m (explode s) '())]
+  ))
   
+(define (m s acc)
+  (match s
+    ['() acc]
+    [(list a) acc]
+    [(list a b c ...)
+     (define callee (let-values ([(x y) (split-at s 2)])
+       (list x (append (list (second x)) y))))
+     ;;(append (append acc (first callee)) (m s (second callee)))
+     (cons (append acc (first callee)) (m (second callee) acc)) 
+     ]))
+
 (module+ test
   (check-equal? (bigrams "") '())
   (check-equal? (bigrams "a") '())
@@ -121,9 +127,7 @@
 ;; [Listof Number] -> Natural
 ;; Compute the length of given list of numbers
 (define (length-lon ls)
-  (match ls
-    ['() 0]
-    [(cons n ls) (+ 1 (length-lon ls))]))
+  (length ls))
 
 (module+ test
   (check-equal? (length-lon '()) 0)
@@ -148,9 +152,7 @@
 ;; Compute the pairwise sum of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-add ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (+ n (first ls2)) (zip-add ls (rest ls2)))]))
+  (map + ls1 ls2))
 
 (module+ test
   (check-equal? (zip-add '() '()) '())
@@ -161,9 +163,7 @@
 ;; Compute the pairwise list of given list of numbers
 ;; ASSUME: lists have equal length
 (define (zip-lon ls1 ls2)
-  (match ls1
-    ['() '()]
-    [(cons n ls) (cons (list n (first ls2)) (zip-lon ls (rest ls2)))]))
+  (map list ls1 ls2))
 
 (module+ test
   (check-equal? (zip-lon '() '()) '())
@@ -252,6 +252,9 @@
            (< (string-length s1) (string-length s2)))
          '("efg" "d" "abc")) '("d" "efg" "abc")))
 
+(quicksort '("efg" "d" "abc") (lambda (s1 s2)
+           (< (string-length s1) (string-length s2)))
+         )
 ;; ∀ (α β) [Listof α] [Listof β] -> [Listof [List α β]]
 ;; Zip together lists into a list of lists
 ;; ASSUME: lists are the same length
@@ -635,6 +638,7 @@
     [(Var v) (list v)]
     [(App e1 e2) (append (expr-free-vars e2) (expr-free-vars e1))]
     [(Lam x e1) (remove x (expr-free-vars e1))]))
+
 (module+ test
   (check list-set-equal? (expr-free-vars (sexpr->expr 123)) '())
   (check list-set-equal? (expr-free-vars (sexpr->expr 'x)) '(x))

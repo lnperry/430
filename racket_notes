@@ -1,0 +1,5 @@
+to open a program in racket repl all ready to go:
+  racket -it <filename>
+
+build w nasm
+  nasm -f elf64 -o tri.o tri.s 
