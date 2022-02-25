@@ -7,3 +7,5 @@ build w nasm
 add stuff to see where in assembly your code is:
   (%% "Start of Some Assembly?")
 
+zip up files from cmd line
+  zip -r dupe-plus.zip .
