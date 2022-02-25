@@ -41,7 +41,17 @@
                  (Mov 'rax val-true)
                  (Je l1)
                  (Mov 'rax val-false)
-                 (Label l1)))]))) 
+                 (Label l1)))] 
+         ['abs
+          (let ((l1 (gensym 'nzero)))
+            (seq (Cmp 'rax 0)
+                 (Jg l1)
+                 (Mov 'rbx 'rax)
+                 (Sub 'rbx 'rax)
+                 (Sub 'rbx 'rax)
+                 (Mov 'rax 'rbx)
+                 (Label l1) ))]))) 
+ 
 
 ;; Expr Expr Expr -> Asm
 (define (compile-if e1 e2 e3)
@@ -55,9 +65,5 @@
          (Label l1)
          (compile-e e3)
          (Label l2))))
-
-
-
-
 
 

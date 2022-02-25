@@ -3,3 +3,7 @@ to open a program in racket repl all ready to go:
 
 build w nasm
   nasm -f elf64 -o tri.o tri.s 
+
+add stuff to see where in assembly your code is:
+  (%% "Start of Some Assembly?")
+
