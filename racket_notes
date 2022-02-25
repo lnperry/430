@@ -22,6 +22,11 @@ compile and interp assembly:
 gradescope submit:
 export PATH="$HOME/.cargo/bin:$PATH"
 
+curr workflow:
+split term: run tests and read test suite
+split term: assemtest.s and ./runassembly.sh assemtest
+split term: compiler and racket repl
+
 require statements for repl:
 (require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp rackunit a86/printer "ast.rkt")
 
