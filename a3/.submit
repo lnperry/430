@@ -1,0 +1,9 @@
+[course]
+id = 365197 
+name = "CMSC430"
+term = "Spring 2022"
+
+[assignment]
+id = 1851585 
+name = "Assignment 3 - Conditional Forms"
+files = [ "parse.rkt", "ast.rkt", "compile.rkt", "interp.rkt", "interp-prim.rkt"] 

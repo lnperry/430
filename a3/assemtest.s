@@ -2,8 +2,10 @@ global entry
         default rel
         section .text
 entry:
-        mov rax, -42 
-        mov rbx, 0 
-        sub rbx, rax
-        mov rax, rbx
+        mov rax, 3 
+        cmp rax, 3
+        mov rax, 1
+        je nzero519
+        mov rax, 3
+nzero519:
         ret

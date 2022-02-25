@@ -19,6 +19,9 @@ compile and print assembly:
 compile and interp assembly:
 (asm-interp (compile (parse '(if (zero? 0) (if (zero? 1) #t #f) 7))));
 
+gradescope submit:
+export PATH="$HOME/.cargo/bin:$PATH"
+
 require statements for repl:
 (require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp rackunit a86/printer "ast.rkt")
 
