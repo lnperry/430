@@ -1,11 +1,21 @@
 to open a program in racket repl all ready to go:
   racket -it <filename>
 
-build w nasm
+build w nasm:
   nasm -f elf64 -o tri.o tri.s 
 
 add stuff to see where in assembly your code is:
   (%% "Start of Some Assembly?")
 
-zip up files from cmd line
+zip up files from cmd line:
   zip -r dupe-plus.zip .
+
+interp:
+(interp (parse '(if (zero? 0) (if (zero? 1) #t #f) 7)))
+
+compile:
+(displayln (asm-string (compile (Prim1 'not (Int -40)))))
+
+require statements for repl:
+(require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp rackunit a86/printer "ast.rkt")
+
