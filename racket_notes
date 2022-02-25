@@ -13,8 +13,11 @@ zip up files from cmd line:
 interp:
 (interp (parse '(if (zero? 0) (if (zero? 1) #t #f) 7)))
 
-compile:
+compile and print assembly:
 (displayln (asm-string (compile (Prim1 'not (Int -40)))))
+
+compile and interp assembly:
+(asm-interp (compile (parse '(if (zero? 0) (if (zero? 1) #t #f) 7))));
 
 require statements for repl:
 (require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp rackunit a86/printer "ast.rkt")
