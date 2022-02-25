@@ -50,7 +50,15 @@
                  (Sub 'rbx 'rax)
                  (Sub 'rbx 'rax)
                  (Mov 'rax 'rbx)
-                 (Label l1) ))]))) 
+                 (Label l1)))] 
+         ['-
+          (let ((l1 (gensym 'nzero)))
+            (seq (Mov 'rbx 0)
+                 (Sub 'rbx 'rax)
+                 (Mov 'rax 'rbx)))]
+       )
+  )
+)
  
 
 ;; Expr Expr Expr -> Asm

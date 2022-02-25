@@ -10,7 +10,7 @@
     [(list 'add1 e)  (Prim1 'add1 (parse e))]
     [(list 'sub1 e)  (Prim1 'sub1 (parse e))]
     [(list 'abs e)   (Prim1 'abs  (parse e))]
-    ;[(list '- e)     (Prim1 '-    (parse e))]
+    [(list '- e)     (Prim1 '-    (parse e))]
     ;[(list 'not e)   (Prim1 'not    (parse e))]
     [(list 'zero? e) (Prim1 'zero? (parse e))]
     [(list 'if e1 e2 e3)
