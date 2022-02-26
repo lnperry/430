@@ -16,6 +16,7 @@
     [(Prim1 p e)       (compile-prim p e)]
     [(If e1 e2 e3)     (compile-if e1 e2 e3)]
     ;; TODO: Handle cond
+    [(Cond e1 e2)      (compile-cond e1 e2)]
     ;; TODO: Handle case
     ))
 
@@ -76,5 +77,21 @@
          (Label l1)
          (compile-e e3)
          (Label l2))))
+
+
+(define (compile-cond e1 e2)
+    (match e1
+      ['() (%% "INSERT ELSE HEre")]
+  
+      ;; if its a list of clauses recurse
+      [(cons x xs) 
+       (match x 
+         [(Clause ex1 ex2) (seq 
+                             (%% "Compile ex1 of clause?")
+                             (compile-e ex1)
+                             (%% "Compile ex2 of clause")
+                             (compile-e ex2)
+                             (compile-cond xs e2))])]))
+
 
 
