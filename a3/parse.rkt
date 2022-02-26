@@ -15,6 +15,12 @@
     [(list 'zero? e) (Prim1 'zero? (parse e))]
     [(list 'if e1 e2 e3)
      (If (parse e1) (parse e2) (parse e3))]
+    [(list 'else e)  (parse e)]
+    ;; thinking about writing this in a way that terminates
+    ;; as in, doesnt continue to parse just ends there kind of thing
+    [(list 'cond e ... s) (Cond (parse-clauses e) (parse s))]
+    ;;[(list 'cond e) (parse e)]
+    [(list p b) (Clause (parse p) (parse b))]
     ;; TODO: Handle cond
     ;; TODO: Handle case
     ;; TODO: Remove this clause once you've added clauses for
@@ -23,5 +29,10 @@
     [_ (Int 0)]
     [_ (error "parse error")]))
 
+
+(define (parse-clauses s)
+  (for/list ([i s])
+    (parse i))
+  )
 
 

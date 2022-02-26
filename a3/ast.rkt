@@ -15,10 +15,12 @@
 
 
 
-(struct Int (i)       #:prefab)
-(struct Bool (b)      #:prefab)
-(struct Prim1 (p e)   #:prefab)
-(struct If (e1 e2 e3) #:prefab)
-
+(struct Int (i)            #:prefab)
+(struct Bool (b)           #:prefab)
+(struct Prim1 (p e)        #:prefab)
+(struct If (e1 e2 e3)      #:prefab)
+(struct Cond (cs e)        #:prefab)
+(struct Case (e cs el)     #:prefab)
+(struct Clause (p b)       #:prefab)
 
 
