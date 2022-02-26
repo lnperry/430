@@ -18,7 +18,12 @@
     [(list 'else e)  (parse e)]
     ;; thinking about writing this in a way that terminates
     ;; as in, doesnt continue to parse just ends there kind of thing
-    [(list 'cond e ... s) (Cond (parse-clauses e) (parse s))]
+    [(list 'cond c ... e) (Cond (parse c) (parse e))]
+    [(cons x xs) 
+     (match x
+       ;;[(list b p) (cons (Clause (parse b) (parse p)) (parse xs))])]
+       [(list b p) (list (Clause (parse b) (parse p)) (parse xs))])]
+       ['() '()]
     ;; TODO: Handle cond
     ;; TODO: Handle case
     ;; TODO: Remove this clause once you've added clauses for
