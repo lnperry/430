@@ -81,15 +81,17 @@
 
 (define (compile-cond e1 e2)
     (match e1
-      ['() (%% "INSERT ELSE HEre")]
+      ['() (seq
+             (%% "Cond: Else?")
+             (compile-e e2))]
   
       ;; if its a list of clauses recurse
       [(cons x xs) 
        (match x 
          [(Clause ex1 ex2) (seq 
-                             (%% "Compile ex1 of clause?")
+                             (%% "Cond: Compile ex1 of clause?")
                              (compile-e ex1)
-                             (%% "Compile ex2 of clause")
+                             (%% "Cond: Compile ex2 of clause")
                              (compile-e ex2)
                              (compile-cond xs e2))])]))
 
