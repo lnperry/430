@@ -78,22 +78,59 @@
          (compile-e e3)
          (Label l2))))
 
+;; (parse '(cond [(zero? -1) 1] [(if 100 200 300) 2] [else 3]))
+;; '#s(Cond
+;;    (#s(Clause #s(Prim1 zero? #s(Int -1)) #s(Int 1))
+;;     #s(Clause #s(If #s(Int 100) #s(Int 200) #s(Int 300)) #s(Int 2)))
+;;    #s(Int 3))
+
+;; the first time i run compile-cond i need to set the rbx flag
+;; i think the way to do this is with a helper
+;; call the helper from up top
+;; then in the helper call this
 
 (define (compile-cond e1 e2)
+  ;; put false in rbx as flag for subsequent assembely
+  (let ((l1 (gensym 'endCond)))
+    (seq
+      (%% "C: Put false in rbx")
+      (Mov 'rbx val-false)
+      (compile-cond-helper e1 e2 l1)
+      (Label l1))))
+
+(define (compile-cond-helper e1 e2 l1)
+    ;; special case of cond where no clauses
     (match e1
-      ['() (seq
-             (%% "Cond: Else?")
-             (compile-e e2))]
+      ['() 
+             (seq
+               (%% "Cond: Else?")
+               (%% "Is rbx true?")
+               (Cmp 'rbx val-true)
+               (%% "Then jump to endCond label")
+               (Je l1) 
+               (%% "Else set rax to value of else")
+               (compile-e e2))]
   
       ;; if its a list of clauses recurse
       [(cons x xs) 
        (match x 
-         [(Clause ex1 ex2) (seq 
-                             (%% "Cond: Compile ex1 of clause?")
+         [(Clause ex1 ex2) (let ((c1 (gensym 'cond))
+                                 (rCl  (gensym 'condRCL))
+                                 (raxTrue (gensym 'condraxTrue)))
+                           (seq 
+                             (%% "C: is rbx true? then jump endCond")
+                             (Cmp 'rbx val-true)
+                             (Je l1)
+                             (%% "Else, compute lCl and store in rbx")
+                             (%% "Compute rax")
                              (compile-e ex1)
-                             (%% "Cond: Compile ex2 of clause")
+                             (%% "Store lCl in rbx")
+                             (Mov 'rbx 'rax)
+                             (%% "Compute what should be in rax when rbx t")
                              (compile-e ex2)
-                             (compile-cond xs e2))])]))
+                             (%% "Recurse")
+                             (compile-cond-helper xs e2 l1)
+                             ))])]))
 
 
 
