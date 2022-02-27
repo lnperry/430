@@ -18,15 +18,18 @@
     [(list 'else e)  (parse e)]
     ;; thinking about writing this in a way that terminates
     ;; as in, doesnt continue to parse just ends there kind of thing
-    [(list 'cond e) (Cond '() (parse e))]
+    [(list 'cond e)       (Cond '() (parse e))]
     [(list 'cond c ... e) (Cond (parse c) (parse e))]
-  
+    ;;[(list b p)           (Clause (parse b) (parse p))] 
     ;;[(list 'cond e) (Cond '() (parse e))]
     [(cons x xs) 
      (match x
-       ;;[(list b p) (cons (Clause (parse b) (parse p)) (parse xs))])]
-       [(list b p) (cons (Clause (parse b) (parse p)) (cons (parse xs) '()))]
-       [_ (cons (parse x) (cons (parse xs) '()))])
+       [(list b p) (cons (Clause (parse b) (parse p)) (if 
+                                                        (empty? xs)
+                                                        '()
+                                                        (parse xs)))])
+       ;;[_ (cons (parse x) (cons (parse xs) '()))])
+       ;;[_ (list "x" x "xs" xs)])
      ]
     
     ;;['() '()]
