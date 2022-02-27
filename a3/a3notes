@@ -1,0 +1,14 @@
+test case failing compiler but working in interpreter:
+
+> (asm-interp (compile (parse '(cond [(if (zero? 10) (cond [else 5]) 9) 10] [(cond [8 9] [11 12] [else 1]) 7] [(cond [else 5]) 8] [else 1]))))
+2
+
+> (interp (parse '(cond [(if (zero? 10) (cond [else 5]) 9) 10] [(cond [8 9] [11 12] [else 1]) 7] [(cond [else 5]) 8] [else 1])))
+10
+
+
+I have no idea why my interp is failing, can't seem to come up with test case to break it. can maybe ask TA during office hours or something
+
+I want to try and implement switch tmw so I can at least bombard jose with questions
+
+

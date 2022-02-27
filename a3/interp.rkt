@@ -19,18 +19,20 @@
          (interp e3))]
     ;; TODO: Handle cond
     [(Cond e1 e2)
-     (interp-clauses e1)]
-       ;;(cond
-         ;;(define something
-          ;; (match e1
-           ;; [(Clause e1 e2) (list (interp e1) (interp e2))]))
-         ;;[else e2])]
-       
+     (let ((c1 (interp-clauses e1))) 
+       (if c1
+         c1
+         (interp e2)))]
     )
     ;; TODO: Handle case
 )
 
-(define (interp-clauses s)
-  (for/list ([i s])
-    (match i
-      [(Clause e1 e2) (list (interp e1) (interp e2))])))
+(define (interp-clauses e)
+  (match e
+    [(cons x xs) (match x
+                   [(Clause e1 e2) (if (interp e1)
+                          (interp e2)
+                          (interp-clauses xs))]
+                   ['() #f])]
+    ['() #f]))
+
