@@ -1,0 +1,42 @@
+(parse '(cond [(if (zero? 10) (cond [else 5]) 9) 10] [(cond [8 9] [11 12] [else 1]) 7] [(cond [else 5]) 8] [else 1]))
+
+'#s(Cond
+    (#s(Clause
+        #s(If #s(Prim1 zero? #s(Int 10)) #s(Cond () #s(Int 5)) #s(Int 9))
+        #s(Int 10))
+     #s(Clause
+        #s(Cond
+           (#s(Clause #s(Int 8) #s(Int 9)) #s(Clause #s(Int 11) #s(Int 12)))
+           #s(Int 1))
+        #s(Int 7))
+     #s(Clause #s(Cond () #s(Int 5)) #s(Int 8)))
+    #s(Int 1))
+
+
+------------------------
+
+(parse '(cond [(case 4 [(4 5 6) 1] [else 2]) 5] [else 10]))
+'#s(Cond
+    (#s(Clause
+        #s(Case
+           #s(Int 4)
+           (#s(Clause (#s(Int 4) #s(Int 5) #s(Int 6)) #s(Int 1)))
+           #s(Int 2))
+        #s(Int 5)))
+    #s(Int 10))
+
+-------------------
+
+(parse '(cond [(case 4 [else (case 4 [(4 5 6) 1] [else 2])]) 1] [else 2]))
+
+'#s(Cond
+    (#s(Clause
+        #s(Case
+           #s(Int 4)
+           ()
+           #s(Case
+              #s(Int 4)
+              (#s(Clause (#s(Int 4) #s(Int 5) #s(Int 6)) #s(Int 1)))
+              #s(Int 2)))
+        #s(Int 1)))
+    #s(Int 2))
