@@ -126,12 +126,29 @@
                              (%% "Compute rax")
                              (compile-e ex1)
                              (%% "Store lCl in rbx")
-                             (Mov 'rbx 'rax)
+                             (Mov 'rbx 'rax) ;; this might not always be 'truthy'
                              (%% "Compute what should be in rax when rbx t")
+			     ;; this computes ex2 no matter what, but only want to do if rax is true
                              (compile-e ex2)
                              (%% "Recurse")
                              (compile-cond-helper xs e2 l1)
                              ))])]))
+
+
+
+(cond [#t 5] [10 5] [else 10])
+(if #t 5 (if 10 5 10)))
+
+
+(compile-if e1 e2 e3)
+
+(compile-if lCl1 rCl1 (compile-if lCl2 rCl2 els))
+
+(define (compile-cond cls els)
+  (match cls
+    [(cons x xs) (match x
+			[(Clause lCl rCl) (compile-if lCl rCl (compile-if compile-cond))])]
+    ['() (compile-e else)]))
 
 
 
