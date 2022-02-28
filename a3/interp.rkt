@@ -40,6 +40,7 @@
     [(cons x xs) (match x
                    [(Clause e1 e2) 
                     (if (interp e1)
+		      ;; consider (If e1 e2 e3) from our language
 		      ;; if e2 is false, then this will break bc it will return the else
                       (interp e2) 
                       (interp-cond-clauses xs))]
