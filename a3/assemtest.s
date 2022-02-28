@@ -1,20 +1,14 @@
-;;; cond '(cond [(not #t) 3] [7 4] [else 5])
-
-;;; [(not #t) 4] [7 4] [else 5]
-
-;;; '#s(Cond
-;;;     (#s(Clause #s(Prim1 not #s(Bool #t)) #s(Int 3))
-;;;      #s(Clause #s(Int 7) #s(Int 4)))
-;;;     #s(Int 5))
-
-
+;    #s(Cond
+;        (
+;           #s(Clause #s(Bool #f) #s(Int 13)) 
+;           #s(Clause #s(Bool #t) #s(Int 12))
+;           #s(Clause #s(Bool #t) #s(Int 11))
+;        )
+;      #s(Int 10))
         global entry
         default rel
         section .text
 entry:
-        mov rax, 1 ;input 1==true, 3==false 
-        ; deal with bools in a sec
-
         ; 1. basically, compile (eval) left hand side of brackets
         ; which will store the value is rax
         ; 2. if its true, put right hand side in rax. jump to DONE 
@@ -27,12 +21,31 @@ entry:
         ; if reg !"true", compile clause stick "truth" in that same register
         
         ; if out of clauses, do else
-  
-        mov rax, 
-        cmp rax, 1 ;true 
+        mov rbx, 3 ; move value of leftClause into rbx 
+        cmp rbx, 1 ; cmp rbx with true (did we find a match?)
+        je cond1 
+        cmp rbx, 1 ; 
+        je cond2
+        cmp rbx, 1
+        je cond3
+        cmp rbx, 1
+        je else
         ret
 
-else:
-       move rax, 5
+cond1:
+        mov rax, 13
+        mov rbx, 1
+        jmp done
 
+cond2:
+        mov rax, 12
+        mov rbx, 1
+        jmp done
 
+cond3:
+        mov rax, 11
+        mov rbx, 1
+        jmp done
+
+else1:
+        move rax, 10

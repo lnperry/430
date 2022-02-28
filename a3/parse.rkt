@@ -19,19 +19,23 @@
     ;; TODO: Handle cond
     [(list 'cond e)       (Cond '() (parse e))]
     [(list 'cond c ... e) (Cond (parse c) (parse e))]
+    ;; TODO: Handle case
+    [(list 'case e c ... e) (Case (parse e) (parse c) (parse e))]
     [(cons x xs) 
      (match x
        [(list b p) (cons (Clause (parse b) (parse p)) (if 
                                                         (empty? xs)
                                                         '()
                                                         (parse xs)))]
+       ;; match aribtrarily long x
+       ;;[(cons y yx) (list "y" y "ys")]
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
-       [_ (Int -100)])]
+       [_ (cons (parse x) (parse xs))])]
+
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
-    [_ (Int -100)]
+    ;;[_ (Int -100)]
     
 
-    ;; TODO: Handle case
     ;; TODO: Remove this clause once you've added clauses for
     ;; parsing cond and case; it's here just so running the test suite
     ;; doesn't trigger parse errors.
