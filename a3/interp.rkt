@@ -40,7 +40,8 @@
     [(cons x xs) (match x
                    [(Clause e1 e2) 
                     (if (interp e1)
-                      (interp e2)
+		      ;; if e2 is false, then this will break bc it will return the else
+                      (interp e2) 
                       (interp-cond-clauses xs))]
                    ['() #f])]
     ['() #f]))
