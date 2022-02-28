@@ -17,10 +17,11 @@
      (If (parse e1) (parse e2) (parse e3))]
     [(list 'else e)  (parse e)]
     ;; TODO: Handle cond
-    [(list 'cond e)       (Cond '() (parse e))]
-    [(list 'cond c ... e) (Cond (parse c) (parse e))]
+    [(list 'cond els)         (Cond '() (parse els))]
+    [(list 'cond c ... els)   (Cond (parse c) (parse els))]
     ;; TODO: Handle case
-    [(list 'case e c ... e) (Case (parse e) (parse c) (parse e))]
+    [(list 'case e els)       (Case (parse e) '() (parse els))]
+    [(list 'case e c ... els) (Case (parse e) (parse c) (parse els))]
     [(cons x xs) 
      (match x
        [(list b p) (cons (Clause (parse b) (parse p)) (if 
@@ -35,6 +36,7 @@
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
     ;;[_ (Int -100)]
     
+    ['() '()]
 
     ;; TODO: Remove this clause once you've added clauses for
     ;; parsing cond and case; it's here just so running the test suite
