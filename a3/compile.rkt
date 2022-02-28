@@ -11,13 +11,14 @@
 ;; Expr -> Asm
 (define (compile-e e)
   (match e
-    [(Int i)           (compile-integer i)]
-    [(Bool b)          (compile-boolean b)]
-    [(Prim1 p e)       (compile-prim p e)]
-    [(If e1 e2 e3)     (compile-if e1 e2 e3)]
+    [(Int i)             (compile-integer i)]
+    [(Bool b)            (compile-boolean b)]
+    [(Prim1 p e)         (compile-prim p e)]
+    [(If e1 e2 e3)       (compile-if e1 e2 e3)]
     ;; TODO: Handle cond
-    [(Cond e1 e2)      (compile-cond e1 e2)]
+    [(Cond cls els)      (compile-cond cls els)]
     ;; TODO: Handle case
+    [(Case e cls els)    (Mov 'rax 10)]
     ))
 
 
