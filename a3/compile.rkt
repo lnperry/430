@@ -99,49 +99,12 @@
       (compile-cond-helper e1 e2 l1)
       (Label l1))))
 
-(define (compile-cond-helper e1 e2 l1)
-    ;; special case of cond where no clauses
-    (match e1
-      ['() 
-             (seq
-               (%% "Cond: Else?")
-               (%% "Is rbx true?")
-               (Cmp 'rbx val-true)
-               (%% "Then jump to endCond label")
-               (Je l1) 
-               (%% "Else set rax to value of else")
-               (compile-e e2))]
-  
-      ;; if its a list of clauses recurse
-      [(cons x xs) 
-       (match x 
-         [(Clause ex1 ex2) (let ((c1 (gensym 'cond))
-                                 (rCl  (gensym 'condRCL))
-                                 (raxTrue (gensym 'condraxTrue)))
-                           (seq 
-                             (%% "C: is rbx true? then jump endCond")
-                             (Cmp 'rbx val-true)
-                             (Je l1)
-                             (%% "Else, compute lCl and store in rbx")
-                             (%% "Compute rax")
-                             (compile-e ex1)
-                             (%% "Store lCl in rbx")
-                             (Mov 'rbx 'rax) ;; this might not always be 'truthy'
-                             (%% "Compute what should be in rax when rbx t")
-			     ;; this computes ex2 no matter what, but only want to do if rax is true
-                             (compile-e ex2)
-                             (%% "Recurse")
-                             (compile-cond-helper xs e2 l1)
-                             ))])]))
 
 
-(cond [#t 5] [10 5] [else 10])
-(if #t 5 (if 10 5 10)))
 
+;;(compile-if e1 e2 e3)
 
-(compile-if e1 e2 e3)
-
-(compile-if lCl1 rCl1 (compile-if lCl2 rCl2 els))
+;;(compile-if lCl1 rCl1 (compile-if lCl2 rCl2 els))
 
 (define (compile-cond cls els)
   (match cls
