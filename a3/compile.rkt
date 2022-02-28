@@ -135,7 +135,6 @@
                              ))])]))
 
 
-
 (cond [#t 5] [10 5] [else 10])
 (if #t 5 (if 10 5 10)))
 
@@ -147,8 +146,29 @@
 (define (compile-cond cls els)
   (match cls
     [(cons x xs) (match x
-			[(Clause lCl rCl) (compile-if lCl rCl (compile-if compile-cond))])]
-    ['() (compile-e else)]))
+			[(Clause lCl rCl) (compile-if lCl rCl (compile-cond xs els))])]
+    ['() (compile-e els)]))
 
 
+(case 3 [(1 2 4) 1] [(1 2 4) 9] [else 5])
 
+(if (equal 3 1) 1 (if (equal 2 3) 1 (...
+
+(if (iterate-check 3 (1 2 4)) 1 (if (iterate-check (1 2 4) 9) 5))
+
+(define (compile-iterate-check e l)
+  (match l
+	 [(cons x xs) (compile-if (compile-equal e x) (Bool #t) (compile-iterate-check e x))]
+	 ['() (Bool #f)]))
+
+(define (compile-equal e x)
+  (let ((l1 (gensym 'equal?)))
+  (seq
+    (compile-e e)
+    (Mov 'rbx 'rax)
+    (compile-e x)
+    (Cmp 'rbx 'rax)
+    (Mov 'rax val-true)
+    (Je l1)
+    (Mov 'rax val-false)
+    (Label l1))))
