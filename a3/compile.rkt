@@ -19,6 +19,7 @@
     [(Cond cls els)      (compile-cond cls els)]
     ;; TODO: Handle case
     [(Case e cls els)    (Mov 'rax 10)]
+    [_ e]
     ))
 
 
@@ -90,34 +91,29 @@
 ;; call the helper from up top
 ;; then in the helper call this
 
-(define (compile-cond e1 e2)
-  ;; put false in rbx as flag for subsequent assembely
-  (let ((l1 (gensym 'endCond)))
-    (seq
-      (%% "C: Put false in rbx")
-      (Mov 'rbx val-false)
-      (compile-cond-helper e1 e2 l1)
-      (Label l1))))
-
-
-
-
 ;;(compile-if e1 e2 e3)
 
 ;;(compile-if lCl1 rCl1 (compile-if lCl2 rCl2 els))
 
 (define (compile-cond cls els)
   (match cls
+    ['() (compile-e els)]
+    [_ (compile-cond-helper cls els)]))
+
+(define (compile-cond-helper cls els)
+  (match cls
     [(cons x xs) (match x
-			[(Clause lCl rCl) (compile-if lCl rCl (compile-cond xs els))])]
-    ['() (compile-e els)]))
+	    ;;[(Clause lCl rCl) (compile-if lCl rCl (compile-cond xs els))])]
+	    [(Clause lCl rCl) (compile-if lCl rCl (compile-cond-helper  xs els))]
+      ['() els])]
+    ['() els]))
 
 
-(case 3 [(1 2 4) 1] [(1 2 4) 9] [else 5])
+;;(case 3 [(1 2 4) 1] [(1 2 4) 9] [else 5])
 
-(if (equal 3 1) 1 (if (equal 2 3) 1 (...
+;;(if (equal 3 1) 1 (if (equal 2 3) 1 (...
 
-(if (iterate-check 3 (1 2 4)) 1 (if (iterate-check (1 2 4) 9) 5))
+;;(if (iterate-check 3 (1 2 4)) 1 (if (iterate-check (1 2 4) 9) 5))
 
 (define (compile-iterate-check e l)
   (match l
@@ -135,3 +131,4 @@
     (Je l1)
     (Mov 'rax val-false)
     (Label l1))))
+
