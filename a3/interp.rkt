@@ -20,9 +20,9 @@
     ;; TODO: Handle cond
     [(Cond cs e)
      (let ((cls (interp-cond-clauses cs))) 
-       (if cls
-         cls
-         (interp e)))]
+       (if (car cls)
+         (interp (cdr cls))
+         (interp e)))] ;; wait interp else here "AST long as possible"
     [(Case e cs el)
      (let ((cls (interp-case-clauses (interp e) cs))) 
        (if (equal? #f cls)
@@ -42,10 +42,10 @@
                     (if (interp e1)
 		      ;; consider (If e1 e2 e3) from our language
 		      ;; if e2 is false, then this will break bc it will return the else
-                      (interp e2) 
+                      (cons #t e2) 
                       (interp-cond-clauses xs))]
-                   ['() #f])]
-    ['() #f]))
+                   ['() (cons #f #f)])]
+    ['() (cons #f #f)]))
 
 
 (define (interp-case-clauses m e)
