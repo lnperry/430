@@ -120,7 +120,7 @@
     [(cons x xs) (match x 
      ['() els]
      [(Clause lCl rCl) (compile-if (compile-contains? e lCl) rCl (compile-case e xs els))])]
-    ['() els]))
+    ['() (compile-e els)]))
 
 (define (compile-contains? e l)
   (match l
