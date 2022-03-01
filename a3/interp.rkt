@@ -25,12 +25,13 @@
          (interp e)))] ;; wait interp else here "AST long as possible"
     [(Case e cs el)
      (let ((cls (interp-case-clauses (interp e) cs))) 
-       (if (equal? #f cls)
-         (interp el)
-         cls))]
+       (if (car cls)
+        (interp (cdr cls))
+         (interp el)))]
        ;;(if cls
         ;; (interp el)
          ;;(first cls)))]
+         
     )
     ;; TODO: Handle case
 )
@@ -53,16 +54,17 @@
     [(cons x xs) (match x
                    [(Clause e1 e2) 
                     (let ((matchval (find-clause-match m e1 e2)))
-                     (if (equal? #f matchval)
-                       matchval ;; no matches in this leftClause list
-                       (interp e2)))]
-                   ['() '()])]
-    ['() #f]))
+                     (if (car matchval) 
+                       ;; I think this is the same issue i had in cond, p sure i can check w racket if i want or just wlak thru the code by hand
+                       (cons #t (cdr matchval)) 
+                       ;; recurse
+                       (interp-case-clauses m xs)))]
+                   ['() (cons #f #f)])]
+    ['() (cons #f #f)]))
 
 (define (find-clause-match m e1 e2)
   (match e1
     [(cons x xs) (if (equal? m (interp x))
-                  e2 ;; if returned, interp in fx above
+                   (cons #t e2);; if returned, interp in fx above
                    (find-clause-match m xs e2))]
-                   ;;(list "m" m "e1" e1 "x" x "xs" xs "equal?" (equal? m (interp x)))]
-    ['() #f]))
+    ['() (cons #f #f)]))
