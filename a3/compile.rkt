@@ -18,7 +18,7 @@
     ;; TODO: Handle cond
     [(Cond cls els)      (compile-cond cls els)]
     ;; TODO: Handle case
-    [(Case e cls els)    (Mov 'rax 10)]
+    [(Case e cls els)    (compile-case e cls els)]
     [_ e]
     ))
 
@@ -115,10 +115,19 @@
 
 ;;(if (iterate-check 3 (1 2 4)) 1 (if (iterate-check (1 2 4) 9) 5))
 
-(define (compile-iterate-check e l)
+(define (compile-case e cls els)
+  (match cls
+    [(cons x xs) (match x 
+     ['() els]
+     [(Clause lCl rCl) (compile-if (compile-contains? e lCl) rCl (compile-case e xs els))])]
+    ['() els]))
+
+(define (compile-contains? e l)
   (match l
-	 [(cons x xs) (compile-if (compile-equal e x) (Bool #t) (compile-iterate-check e x))]
-	 ['() (Bool #f)]))
+	 ['() (Bool #f)]
+   [(cons x xs) 
+    (compile-if (compile-equal e x) (Bool #t) (compile-contains? e xs))]
+   [_ (compile-if (compile-equal e l) (Bool #t) (Bool #f))]))
 
 (define (compile-equal e x)
   (let ((l1 (gensym 'equal?)))
