@@ -24,15 +24,13 @@
     [(list 'case e c ... els) (Case (parse e) (parse c) (parse els))]
      [(cons x xs) 
      (match x
-       [(list b p) (cons (Clause (parse b) (parse p)) (if 
-                                                        (empty? xs)
-                                                        '()
-                                                        (parse xs)))]
+       ['() '()]
+       [(list b p) (cons (Clause (parse b) (parse p)) (parse xs))]
        ;; match aribtrarily long x
        ;;[(cons y yx) (list "y" y "ys")]
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
        [(? list?) (Clause (parse-clause-lst x) (first xs))]
-       [_ (parse x) (parse xs)])]
+       [_ (cons (parse x) (parse xs))])]
        
     ['() '()]
 
