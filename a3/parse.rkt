@@ -24,12 +24,14 @@
     [(list 'case e c ... els) (Case (parse e) (parse c) (parse els))]
     [(cons x xs) 
      (match x
-       [(list b p) (cons (Clause (parse b) (parse p)) (if 
+       [(list b p) (cons (Clause (parse-clauses b) (parse p)) (if 
                                                         (empty? xs)
                                                         '()
                                                         (parse xs)))]
        ;; match aribtrarily long x
        ;;[(cons y yx) (list "y" y "ys")]
+
+
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
        [_ (cons (parse x) (parse xs))])]
 
@@ -43,4 +45,13 @@
     ;; doesn't trigger parse errors.
     [_ (Int 0)]
     [_ (error "parse error")]))
+
+(define (parse-clauses cls)
+  (if (list? cls)
+    (parse-clause-lst cls)
+    (parse cls)))
+(define (parse-clause-lst cls)
+  (match cls
+    [(cons x xs) (cons (parse x) (parse-clause-lst xs))]
+    ['() '()]))
 
