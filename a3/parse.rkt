@@ -22,22 +22,18 @@
     ;; TODO: Handle case
     [(list 'case e els)       (Case (parse e) '() (parse els))]
     [(list 'case e c ... els) (Case (parse e) (parse c) (parse els))]
-    [(cons x xs) 
+     [(cons x xs) 
      (match x
-       [(list b p) (cons (Clause (parse-clauses b) (parse p)) (if 
+       [(list b p) (cons (Clause (parse b) (parse p)) (if 
                                                         (empty? xs)
                                                         '()
                                                         (parse xs)))]
        ;; match aribtrarily long x
        ;;[(cons y yx) (list "y" y "ys")]
-
-
        ;; this is sus, had to add this to pass tests. prob sign im not doing it right
-       [_ (cons (parse x) (parse xs))])]
-
-       ;; this is sus, had to add this to pass tests. prob sign im not doing it right
-    ;;[_ (Int -100)]
-    
+       [(? list?) (Clause (parse-clause-lst x) (first xs))]
+       [_ (parse x) (parse xs)])]
+       
     ['() '()]
 
     ;; TODO: Remove this clause once you've added clauses for
@@ -47,9 +43,16 @@
     [_ (error "parse error")]))
 
 (define (parse-clauses cls)
-  (if (list? cls)
-    (parse-clause-lst cls)
-    (parse cls)))
+    ;; if the thing is a list, if the first thing is an int then i know
+    ;; it is a case
+    ;; otherwise, it MUST be a cond
+    (match cls
+      [(cons x xs) 
+       (match x
+         [(? integer?) (parse cls)]
+         [(? boolean?) (parse cls)]
+         [_ (parse-clause-lst cls)])]
+      [_ (parse cls)]))
 (define (parse-clause-lst cls)
   (match cls
     [(cons x xs) (cons (parse x) (parse-clause-lst xs))]
