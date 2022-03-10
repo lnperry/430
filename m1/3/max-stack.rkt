@@ -42,21 +42,21 @@
 
 ;; Op2 Expr Expr CEnv -> Asm
 (define (compile-prim2 e1 e2)
-  (begin (compile-e e1)
-       (+ (compile-e e2) 1)))
+  (+ (+ (compile-e e1) (compile-e e2)) 1))
 
 ;; Expr Expr Expr CEnv -> Asm
 (define (compile-if e1 e2 e3)
-    (begin (compile-e e1)
+    (+ (compile-e e1)
          (compile-e e2)
          (compile-e e3)))
 
 ;; Expr Expr CEnv -> Asm
 (define (compile-begin e1 e2)
-  (begin (compile-e e1)
+  (+ (compile-e e1)
        (compile-e e2)))
 
 ;; Id Expr Expr CEnv -> Asm
 (define (compile-let x e1 e2)
-  (begin (compile-e e1)
+  ;; can toss out 
+  (max (compile-e e1)
        (+ (compile-e e2) 1)))
