@@ -1,0 +1,23 @@
+Q: What are the differences between `begin` as we have it in Fraud, and
+   `begin` being transformed into `let` as we showed above?
+
+
+A:
+
+
+
+Q: What consequences can these differences have?
+
+
+A:
+
+
+
+Q: What feature can you add so that you can ensure that the desugared
+   version of `begin` emits the same exact code as the version of `begin`
+   we have in Fraud? Hint: you'll either need to add something to `let`, or
+   add a very `let`-like thing. You'll then need to tweak the transformation
+   in a very minor way.
+
+
+A:
