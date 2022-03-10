@@ -2,14 +2,18 @@ Q: What are the differences between `begin` as we have it in Fraud, and
    `begin` being transformed into `let` as we showed above?
 
 
-A:
+A: In fraud `let` appends to both our stack (%rsp) and our compile-time environment ("c"), even though the variable we gensym will never be touched. The `begin` in fraud doesn't push anything onto the stack, increment the stack pointer, or even touch the compile-time environment, it simply compiles expression e1 and then compiles expression e2.
 
 
 
 Q: What consequences can these differences have?
 
 
-A:
+A: The main consequences of these differences are compile time and execution speed. 
+
+The compile time speed will be negatively impacted and slower because pushing the gensym'd variable to our environment is not free, and it will additionally slow down our environment lookup functions. If we have 1 million begin statements adding gensym'd variables to our compile-time environment, any let statements that have to lookups through that very long compile-time environment list will be very slow. Unlike the begin in fraud, which does not touch the compile time environment
+
+The execution speed of the assembly will be impacted because we will be doing unnecessary pushing and popping of %rax off the stack and making unnecessary adjustments to the stack pointer. These instructions are unnecessary, because we don't care about what is actually on the stack or not for any `begin`, since the way `begin` is defined we always throw away the variable anyway. But when we rewrote it with a `let` statement, we no longer do that.
 
 
 
