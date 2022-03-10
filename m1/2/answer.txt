@@ -24,4 +24,4 @@ Q: What feature can you add so that you can ensure that the desugared
    in a very minor way.
 
 
-A:
+A: One way to solve this issue is adding a wildcard variable `_` and some kind of logic like an if statement/function to `compile-let` that doesn't push to the stack or cons to our compile-time environment when the wildcard `_` is the variable we are binding. We can then translate `begin` into something like `(let (_ e1) e2))` or more specifically translate it into `(Let _ (translate-e e0 r) (translate-e e1 r))` and our added logic to `compile-let` will ensure that the wildcard variable does not get added to our stack or our compile-time environment.

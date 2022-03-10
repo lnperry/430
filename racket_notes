@@ -30,5 +30,5 @@ split term: compiler and racket repl
 require statements for repl:
 (require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp rackunit a86/printer "ast.rkt")
 
-
-
+where langs are stored:
+/home/luke/.racket/7.2/pkgs/langs/

@@ -30,15 +30,11 @@
     [(Eof)              0]
     [(Var x)            0]
     [(Prim0 p)          0]
-    [(Prim1 p e)        (compile-e e)]
-    [(Prim2 p e1 e2)    (compile-e e1 e2)]
-    [(If e1 e2 e3)      (compile-e e1 e2 e3)]
-    [(Begin e1 e2)      (compile-e e1 e2)]
+    [(Prim1 p e)        (compile-prim1 e)]
+    [(Prim2 p e1 e2)    (compile-prim2 e1 e2)]
+    [(If e1 e2 e3)      (compile-if e1 e2 e3)]
+    [(Begin e1 e2)      (compile-begin e1 e2)]
     [(Let x e1 e2)      (compile-let x e1 e2)]))
-
-;; Op0 CEnv -> Asm
-(define (compile-prim0 p)
-  (compile-op0 p))
 
 ;; Op1 Expr CEnv -> Asm
 (define (compile-prim1 p e c)
@@ -46,21 +42,21 @@
 
 ;; Op2 Expr Expr CEnv -> Asm
 (define (compile-prim2 p e1 e2)
-  (seq (compile-e e1)
+  (begin (compile-e e1)
        (compile-e e2)))
 
 ;; Expr Expr Expr CEnv -> Asm
 (define (compile-if e1 e2 e3)
     (begin (compile-e e1)
          (compile-e e2)
-         (compile-e e3))))
+         (compile-e e3)))
 
 ;; Expr Expr CEnv -> Asm
-(define (compile-begin e1 e2 c)
-  (begin (compile-e e1 c)
-       (compile-e e2 c)))
+(define (compile-begin e1 e2)
+  (begin (compile-e e1)
+       (compile-e e2)))
 
 ;; Id Expr Expr CEnv -> Asm
-(define (compile-let x e1 e2 c)
+(define (compile-let x e1 e2)
   (begin (compile-e e1)
-       (compile-e e2)+1))
+       (+ (compile-e e2) 1)))
