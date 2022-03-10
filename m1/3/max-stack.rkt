@@ -18,6 +18,49 @@
   (check-equal? (max-stack-size (Prim2 '+ (Int 5) (Int 4))) 1))
    
 (define (max-stack-size e)
-  ;; TODO: implement this function
-  0
+  (compile-e e)
   )
+
+;; Expr CEnv -> Asm
+(define (compile-e e)
+  (match e
+    [(Int i)            0]
+    [(Bool b)           0]
+    [(Char c)           0]
+    [(Eof)              0]
+    [(Var x)            0]
+    [(Prim0 p)          0]
+    [(Prim1 p e)        (compile-e e)]
+    [(Prim2 p e1 e2)    (compile-e e1 e2)]
+    [(If e1 e2 e3)      (compile-e e1 e2 e3)]
+    [(Begin e1 e2)      (compile-e e1 e2)]
+    [(Let x e1 e2)      (compile-let x e1 e2)]))
+
+;; Op0 CEnv -> Asm
+(define (compile-prim0 p)
+  (compile-op0 p))
+
+;; Op1 Expr CEnv -> Asm
+(define (compile-prim1 p e c)
+  (compile-e e))
+
+;; Op2 Expr Expr CEnv -> Asm
+(define (compile-prim2 p e1 e2)
+  (seq (compile-e e1)
+       (compile-e e2)))
+
+;; Expr Expr Expr CEnv -> Asm
+(define (compile-if e1 e2 e3)
+    (begin (compile-e e1)
+         (compile-e e2)
+         (compile-e e3))))
+
+;; Expr Expr CEnv -> Asm
+(define (compile-begin e1 e2 c)
+  (begin (compile-e e1 c)
+       (compile-e e2 c)))
+
+;; Id Expr Expr CEnv -> Asm
+(define (compile-let x e1 e2 c)
+  (begin (compile-e e1)
+       (compile-e e2)+1))
