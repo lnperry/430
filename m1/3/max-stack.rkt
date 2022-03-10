@@ -37,13 +37,13 @@
     [(Let x e1 e2)      (compile-let x e1 e2)]))
 
 ;; Op1 Expr CEnv -> Asm
-(define (compile-prim1 p e c)
+(define (compile-prim1 e)
   (compile-e e))
 
 ;; Op2 Expr Expr CEnv -> Asm
-(define (compile-prim2 p e1 e2)
+(define (compile-prim2 e1 e2)
   (begin (compile-e e1)
-       (compile-e e2)))
+       (+ (compile-e e2) 1)))
 
 ;; Expr Expr Expr CEnv -> Asm
 (define (compile-if e1 e2 e3)
