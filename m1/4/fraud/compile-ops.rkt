@@ -1,6 +1,6 @@
 #lang racket
 (provide (all-defined-out))
-(require "ast.rkt" "types.rkt" a86/ast "compile.rkt")
+(require "ast.rkt" "types.rkt" a86/ast)
 
 (define rax 'rax) ; return
 (define rdi 'rdi) ; arg
@@ -77,29 +77,34 @@
           (assert-integer rax c)
           (Sub r8 rax)
           (Mov rax r8))]
-    ['Shift 
+    ['arithmetic-shift 
       (let ((l1 (gensym 'if))
            (l2 (gensym 'if)))
         (seq 
           (Cmp rax 0)
           (Jl l1)
           ;; if rax >= 0, this execs
-          (compile-left-shift)
+          (compile-left-shift c)
           (Jmp l2) ;; jump to end
           (Label l1)
           ;; if rax < 0, this execs
-          (compile-right-shift)
-          (Label l2)))]  
+          (compile-right-shift c)
+          (Label l2)))]))
       ;; (if rax<0 compile-left-shift compile-right-shift)
       ;; i dont think compile if works bc i need to compile certain code
       ;; based on what a value is and i dont know when im compiling
       ;; what is actually in that register
       ;; so ill need to jump to diff labels depending
       ;; so prob want to steal if stmt code cmp rax to 0 then jump accordingly
-(define (compile-left-shift)
-  (let ((loopLabel (gensym 'loop-work))
-        (condLabel (gensym 'loop-cond)))
+(define (compile-left-shift c)
+  (let ((loopLabel (gensym 'loop))
+        (condLabel (gensym 'cond)))
     (seq 
+         (Pop r8)
+         (assert-integer r8 c)
+         (assert-integer rax c)
+         ;; shift from our compiler representation to what programmer means
+         (Sar rax 1)
          (Jmp condLabel)
          (Label loopLabel)
          (Sal r8 1) 
@@ -109,14 +114,19 @@
          (Jne loopLabel)
          (Mov rax r8))))
 
-(define (compile-left-shift)
-  (let ((loopLabel (gensym 'loop-work))
-        (condLabel (gensym 'loop-cond)))
+(define (compile-right-shift c)
+  (let ((loopLabel (gensym 'loop))
+        (condLabel (gensym 'cond)))
     (seq 
+         (Pop r8)
+         (assert-integer r8 c)
+         (assert-integer rax c)
+         ;; TODO: why don't I need to shift the 2s compliment 
+         ;; or why not shift however we represent negative nums?
+         ;; TODO: why am i failing the asserts?
          (Jmp condLabel)
          (Label loopLabel)
-         (Sar r8 1) ;; do we have to worry about the int being bit-tagged?
-         ;; i say no bc 4==8 in our lang and 4>>1==8>>1??
+         (Sar r8 1) 
          (Add rax 1)
          (Label condLabel)
          (Cmp rax 0) 
