@@ -91,12 +91,7 @@
           ;; if rax < 0, this execs
           (compile-right-shift c)
           (Label l2)))]))
-      ;; (if rax<0 compile-left-shift compile-right-shift)
-      ;; i dont think compile if works bc i need to compile certain code
-      ;; based on what a value is and i dont know when im compiling
-      ;; what is actually in that register
-      ;; so ill need to jump to diff labels depending
-      ;; so prob want to steal if stmt code cmp rax to 0 then jump accordingly
+
 (define (compile-left-shift c)
   (let ((loopLabel (gensym 'loop))
         (condLabel (gensym 'cond)))
@@ -104,7 +99,7 @@
          (Pop r8)
          (assert-integer r8 c)
          (assert-integer rax c)
-         ;; shift from our compiler representation to what programmer means
+         ;; shift from our compiler's bit representation to what programmer means
          (Sar rax 1)
          (Jmp condLabel)
          (Label loopLabel)
@@ -113,9 +108,8 @@
          (Label condLabel)
          (Cmp rax 0) 
          (Jne loopLabel)
-         (Mov rax r8)
-         ;; need to tag rax with int!(maybe)
-         )))
+         ;; no need to tag as int, least significant bit always 0
+         (Mov rax r8))))
 
 (define (compile-right-shift c)
   (let ((loopLabel (gensym 'loop))
@@ -124,15 +118,6 @@
          (Pop r8)
          (assert-integer r8 c)
          (assert-integer rax c)
-         ;; convert to positive representation 
-         ;;(Mov r10 rax) ;;r10 = -6 (really -12 in bits)
-         ;;(Sub r10 rax)
-         ;;(Sub r10 rax)
-         ;;(Add rax r10)
-         ;;(Add rax r10)
-         ;;(Sar r10 1) ;;r10 = -3 (really -6 in bits) 
-         ;;(Sub r10 rax)
-         ;;(Mov rax r10)
          ;; shift from our compiler representation to what programmer means
          (Sar rax 1)
          (Jmp condLabel)
@@ -143,8 +128,8 @@
          (Cmp rax 0) 
          (Jne loopLabel)
          (Mov rax r8)
-         (Sub rax 1)
-         )))
+         ;; set least significant bit to zero, to tag as int
+         (Sub rax 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
