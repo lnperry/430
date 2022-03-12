@@ -7,6 +7,7 @@
 (define r8  'r8)  ; scratch in +, -
 (define r9  'r9)  ; scratch in assert-type
 (define rsp 'rsp) ; stack
+(define r10 'r10) ; scratch in arithmetic-shift
 
 ;; Op0 CEnv -> Asm
 (define (compile-op0 p c)
@@ -112,7 +113,9 @@
          (Label condLabel)
          (Cmp rax 0) 
          (Jne loopLabel)
-         (Mov rax r8))))
+         (Mov rax r8)
+         ;; need to tag rax with int!(maybe)
+         )))
 
 (define (compile-right-shift c)
   (let ((loopLabel (gensym 'loop))
@@ -121,9 +124,17 @@
          (Pop r8)
          (assert-integer r8 c)
          (assert-integer rax c)
-         ;; TODO: why don't I need to shift the 2s compliment 
-         ;; or why not shift however we represent negative nums?
-         ;; TODO: why am i failing the asserts?
+         ;; convert to positive representation 
+         ;;(Mov r10 rax) ;;r10 = -6 (really -12 in bits)
+         ;;(Sub r10 rax)
+         ;;(Sub r10 rax)
+         ;;(Add rax r10)
+         ;;(Add rax r10)
+         ;;(Sar r10 1) ;;r10 = -3 (really -6 in bits) 
+         ;;(Sub r10 rax)
+         ;;(Mov rax r10)
+         ;; shift from our compiler representation to what programmer means
+         (Sar rax 1)
          (Jmp condLabel)
          (Label loopLabel)
          (Sar r8 1) 
@@ -131,9 +142,9 @@
          (Label condLabel)
          (Cmp rax 0) 
          (Jne loopLabel)
-         (Mov rax r8))))
- ;; at this point my lShift is on top of stack and rax is rShift
-
+         (Mov rax r8)
+         (Sub rax 1)
+         )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
