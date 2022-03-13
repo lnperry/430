@@ -10,15 +10,36 @@ Q: At a high level, how would you go about changing the code so that when we
 
 
 
-A: We currently have no access to the size of the heap in our compiler. We only know if we go out of bounds because we seg fault. We have two options to get access to the size of the heap in our compiler. Option 1, we update our (compile-e) function to call some external C function and use the heap pointer we are passed in the %rsi registger and saved in the %rbx register, then we will know the exact size of our heap. However, that seems very combursome. Our second, Option 2, is we must pass the size of the heap to our compiler from our runtime system. 
+A: We currently have no access to the size of the heap in our compiler. 
+   We only know if we go out of bounds because we seg fault. 
+   We have two options to get access to the size of the heap in our compiler. 
+   Option 1, we update our (compile-e) function to call some external C function 
+   and use the heap pointer we are passed in the %rsi registger and saved in the %rbx register, 
+   then we will know the exact size of our heap. 
+   However, that seems very combursome. 
+   Our second, Option 2, is we must pass the size of the heap to our compiler from our runtime system. 
 
-The easier option is option 2, passing the size of the pointer to our compiler from our run time system. The register %rsi is defined in the System V Application Binary Interface as the 1st argument to functions. I do not know it off the top of my head, and I am not sure if we can use external resources, but lets say the second register used to pass functions in C is %rdx for examples sake. 
+   The easier option is option 2, passing the size of the pointer to our compiler from our run time system. 
+   The register %rsi is defined in the System V Application Binary Interface as the 1st argument to functions. 
+   I do not know it off the top of my head, and I am not sure if we can use external resources, 
+   but lets say the second register used to pass functions in C is %rdx for examples sake. 
 
-We need to update runtime system's main.c call to from entry(heap) to entry(heap, heap_size) and then in compile.rkt we need to update our compiler "entry" (compile-e e) to save this register since it may get clobbered/erased when we call other registers because it may not be a callee-saved register. Again, I didn't check with the System V ABI book to see if %rbx is callee-saved or is indeed used as the second argument to pass to C functions but let's assume for this answer it is please! 
+   We need to update runtime system's main.c call to from entry(heap) to entry(heap, heap_size) 
+   and then in compile.rkt we need to update our compiler "entry" (compile-e e) to save this register 
+   since it may get clobbered/erased when we call other registers because it may not be a callee-saved register. 
+   Again, I didn't check with the System V ABI book to see if %rbx is callee-saved 
+   or is indeed used as the second argument to pass to C functions but let's assume for this answer it is please! 
 
-Now that we have the integer number size of our heap accessible from our compiler in a register, in our compiler "entry" (compile-e e), before we even begin to call our (compile-e e c), we can compute the address where we run out of memory by adding the size of our heap to our starting memory address saved in %rbx. We could then save this "map-heap-size" in a scratch register %r10 or any other callee-saved register to ensure that value stays accessible to us throughout our entire compile-time operations. 
+   Now that we have the integer number size of our heap accessible from our compiler in a register, 
+   in our compiler "entry" (compile-e e), before we even begin to call our (compile-e e c), 
+   we can compute the address where we run out of memory by adding the size of our heap 
+   to our starting memory address saved in %rbx. We could then save this "map-heap-size" 
+   in a scratch register %r10 or any other callee-saved register to ensure that value stays accessible 
+   to us throughout our entire compile-time operations. 
 
-Now that we know our max heap heap size, we can just make sure that %rbx never exceeds this value whenever we construct a box or a cons cell in compile-ops.rkt I am sure there may some finer grain details about passing an integer literal to our compiler, using this integer literal, computing the "max-heap-size", etc. but these are all discussed from a higher level like the question asks.
+   Now that we know our max heap heap size, we can just make sure that %rbx never exceeds this value 
+   whenever we construct a box or a cons cell in compile-ops.rkt and I am sure there may some finer grain details 
+   about passing an integer literal to our compiler, using this integer literal, computing the "max-heap-size", etc. but these are all discussed from a higher level like the question asks.
 
 
 
@@ -29,19 +50,21 @@ Q: With the context from your answer to the first part: what would the
    labels with gensym, we aren't running your code, we just need to get the idea.
 
 
-A: Based on the answer above, we now the address of where we run out of memory saved in our callee-saved register %r10 (this is an assumption we made assumed above it would be callee saved). I would create a function called (assert-heap-capacity) and invoke it in box.
+A: Based on the answer above, we now the address of where we run out of memory saved in our 
+   callee-saved register %r10 (this is an assumption we made assumed above it would be callee saved). 
+   I would create a function called (assert-heap-capacity) and invoke it in box.
 
-;; assert heap is not full
-(define (assert-heap-capacity)
-    (seq (assert-integer r)
-	     ;; compare max_heap_size address %r10 to current address heap %rbx stored in %rax due to calling convention
-         (Cmp r10 rax)
-		 ;; if they are greater than or equal, we are at heap capacity, jump to error
-         (Je 'raise_heap_exceeded)))
+   ;; assert heap is not full
+   (define (assert-heap-capacity)
+      (seq (assert-integer r)
+         ;; compare max_heap_size address %r10 to current address heap %rbx stored in %rax due to calling convention
+            (Cmp r10 rax)
+         ;; if they are greater than or equal, we are at heap capacity, jump to error
+            (Je 'raise_heap_exceeded)))
 
-(seq 
-	(assert-heap-capacity)
-	(Mov (Offset rbx 0) rax)
-    (Mov rax rbx)
-    (Or rax type-box)
-    (Add rbx 8))
+   (seq 
+      (assert-heap-capacity)
+      (Mov (Offset rbx 0) rax)
+      (Mov rax rbx)
+      (Or rax type-box)
+      (Add rbx 8))

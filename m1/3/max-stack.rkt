@@ -57,6 +57,6 @@
 
 ;; Id Expr Expr CEnv -> Asm
 (define (compile-let x e1 e2)
-  ;; can toss out 
+  ;; can toss out e1 bind statements, they dont impact stack size
   (max (compile-e e1)
        (+ (compile-e e2) 1)))
