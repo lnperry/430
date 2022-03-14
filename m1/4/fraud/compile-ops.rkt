@@ -113,7 +113,8 @@
 
 (define (compile-right-shift c)
   (let ((loopLabel (gensym 'loop))
-        (condLabel (gensym 'cond)))
+        (condLabel (gensym 'cond))
+        (zeroLabel (gensym 'zero)))
     (seq 
          (Pop r8)
          (assert-integer r8 c)
@@ -129,7 +130,10 @@
          (Jne loopLabel)
          (Mov rax r8)
          ;; set least significant bit to zero, to tag as int
-         (Sub rax 1))))
+         (Cmp rax 0)
+         (Je zeroLabel)
+         (Sub rax 1)
+         (Label zeroLabel))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
