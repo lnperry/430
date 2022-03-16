@@ -1,0 +1,9 @@
+for arbitrary length +'s can we just next +'s? we have a plus statement, can we just convert a list of (+ w x y z) into (+ w (+ x (+ y z)))?
+
+for generalizing let can I just iterate over the bindings and push them all to the stack and append them to the compile-time environment and then compile the body?
+
+for let* back-referencing, can I just implement it with nested (let )s ?
+
+like make the 1st binding a let in the second binding, so on and so forth. then in the final nested let, evaluate the let*'s body?
+
+
