@@ -32,3 +32,6 @@ require statements for repl:
 
 where langs are stored:
 /home/luke/.racket/7.2/pkgs/langs/
+
+runtime error include:
+(current-objs '("runtime.o"))
