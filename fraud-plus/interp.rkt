@@ -68,16 +68,27 @@
                           [v v]))]))] 
     ;; TODO: implement case
     [(Case e cs el)
-     (let ((cls (interp-case-clauses (interp e) cs))) 
-       (if (car cls)
-        (interp (cdr cls))
-         (interp el)))]
+     (let* (
+            (cls (interp-case-clauses e cs r))
+            (first (car cls))
+            (second (cdr cls)))
+       (match first
+              ['err 'err]
+              [v (if first
+                   (match (interp-env second r)
+                          ['err 'err]
+                          [v v])
+                   (match (interp-env el r)
+                          ['err 'err]
+                          [v v]))]))]
+
     ;; TODO: this works for just a single binding
     ;; but you need to make it work in general
     [(Let (list x) (list e1) e2)
      (match (interp-env e1 r)
        ['err 'err]
        [v (interp-env e2 (ext r x v))])]
+
     ;; TODO: implement let, let*
     [(Let  xs es e) 'err]
     [(Let* xs es e) 'err]))
@@ -135,25 +146,33 @@
     ['() (cons #f #f)]))
 
 
-(define (interp-case-clauses m e)
+(define (interp-case-clauses m e r)
   (match e
-    ['err 'err]
     [(cons x xs) (match x
                    ['err 'err]
                    [(Clause e1 e2) 
-                    (let ((matchval (find-clause-match m e1 e2)))
-                     (if (car matchval) 
-                       ;; I think this is the same issue i had in cond, p sure i can check w racket if i want or just wlak thru the code by hand
-                       (cons #t (cdr matchval)) 
-                       ;; recurse
-                       (interp-case-clauses m xs)))]
+                    (let ((matchval (find-clause-match m e1 e2 r)))
+                      (match (car matchval)
+                             ['err (cons 'err 'err)]
+                             [v (if (car matchval) 
+                                  (cons #t (cdr matchval)) 
+                                  (interp-case-clauses m xs r))]))]
                    ['() (cons #f #f)])]
     ['() (cons #f #f)]))
 
-(define (find-clause-match m e1 e2)
-  (match e1
-    ['err 'err]
-    [(cons x xs) (if (equal? m x)
-                   (cons #t e2);; if returned, interp in fx above
-                   (find-clause-match m xs e2))]
-    ['() (cons #f #f)]))
+(define (find-clause-match m e1 e2 r)
+  (match (interp-env m r)
+    ['err (cons 'err 'err)]
+    [v
+      (match e1
+    ;; if bool? or int?
+    ;;   proceed w norm check
+    ;; else
+    ;;   err
+      [(cons x xs)
+       (if (or (boolean? x) (integer? x)) 
+         (if (equal? v x)
+           (cons #t e2);; if returned, interp in fx above
+           (find-clause-match m xs e2 r))
+         (cons 'err 'err))]
+      ['() (cons #f #f)])]))
