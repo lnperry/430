@@ -208,8 +208,8 @@
 
 (define (compile-primN p es c)
   (match es 
-    ['() (seq)]
-    [(list x) (compile-prim1 p x c)]
+    ['() (seq (Mov rax 0))]
+    [(list x) (compile-e x c)]
     [(list x y)  (compile-prim2 p x y c)]
     [(cons x xs) (compile-prim2 p x (compile-primN p xs c) c)]))
 
