@@ -38,7 +38,7 @@
     [(Prim1 p e)     (compile-prim1 p e c)]
     [(Prim2 p e1 e2) (compile-prim2 p e1 e2 c)]
     ;; TODO: implement n-ary primitive +
-    [(PrimN p es)    (seq)]
+    [(PrimN p es)    (compile-primN p es c)]
     [(If e1 e2 e3)   (compile-if e1 e2 e3 c)]
     [(Begin e1 e2)   (compile-begin e1 e2 c)]
     ;; TODO: this only works for single variable binding,
@@ -205,6 +205,13 @@
           (assert-integer rax c)
           (Sub r8 rax)
           (Mov rax r8))]))
+
+(define (compile-primN p es c)
+  (match es 
+    ['() 0]
+    [(list x) (compile-prim1 p x c)]
+    [(list x y)  (compile-prim2 p x y c)]
+    [(cons x xs) (compile-prim2 p x (compile-primN p xs c) c)]))
 
 
 
