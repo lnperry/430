@@ -31,6 +31,17 @@
             ['err 'err]
             [vs (cons v vs)])])]))
 
+(define (true-for-all? pred list)
+  (cond
+    [(empty? list) #t]
+    [(pred (first list)) (true-for-all? pred (rest list))]
+    [else #f]))
+
+(define (true-for-all-no-error? pred list)
+  (match list 
+    [(cons x xs) (match x
+                        (? (equal? 'err 'err)) ]))
+
 ;; Expr -> Answer
 (define (interp e)
   (interp-env e '()))
@@ -57,7 +68,9 @@
     ;; TODO: implement n-ary primitive +
     [(PrimN p es) 
      (match p
-            ['+ (foldl + 0 (interp*-env es r))]
+            ['+ (let ((i1 (interp*-env es r))) (if (true-for-all? integer? i1)
+                                                            (foldl + 0 i1)
+                                                            'err))]
             [_ 'err])]
     [(If p e1 e2)
      (match (interp-env p r)
