@@ -66,12 +66,11 @@
              ['err 'err]
              [v2 (interp-prim2 p v1 v2)])])]
     ;; TODO: implement n-ary primitive +
+    ;; rewrite PrimN in terms of Prim2?
     [(PrimN p es) 
      (match p
-            ['+ (let ((i1 (interp*-env es r))) (match i1
-                                                      ['err 'err]
-                                                      [_ (foldl + 0 (flatten i1))]))] 
-            [_ 'err])]
+       ['+ (prim-n-helper p es r)])]
+      
     [(If p e1 e2)
      (match (interp-env p r)
        ['err 'err]
@@ -127,6 +126,16 @@
     [(Let  xs es e) 'err]
     [(Let* xs es e) 'err]))
 
+(define (prim-n-helper p es r)
+  (match es
+    [(list x y) (match (interp-env x r)
+                  ['err 'err]
+                  [v1 (match (interp-env y r)
+                             ['err 'err]
+                             [v2 (interp-prim2 p v1 v2)])])]
+    [(cons x xs) (match (interp-env x r)
+                   ['err 'err]
+                   [v1 (interp-prim2 p v1 (prim-n-helper p xs r))])]))
 
 
 ;; Env Id -> Value
