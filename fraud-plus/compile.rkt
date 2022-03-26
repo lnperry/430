@@ -212,7 +212,7 @@
     [(list x) (seq (compile-e x c)
                    (assert-integer rax c))]
     [(list x y)  (compile-prim2 p x y c)]
-    [(cons x xs) (compile-prim2 p x (compile-primN p xs c) c)]))
+    [(cons x xs) (compile-prim2 p (compile-primN p xs c) x c)]))
 
 
 
