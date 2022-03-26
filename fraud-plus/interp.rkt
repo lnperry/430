@@ -69,7 +69,7 @@
     ;; rewrite PrimN in terms of Prim2?
     [(PrimN p es) 
      (match p
-       ['+ (prim-n-helper p es r)])]
+       ['+ (interp-primn p es r)])]
       
     [(If p e1 e2)
      (match (interp-env p r)
@@ -126,8 +126,12 @@
     [(Let  xs es e) 'err]
     [(Let* xs es e) 'err]))
 
-(define (prim-n-helper p es r)
+(define (interp-primn p es r)
   (match es
+    ['() 0]
+    [(list x) (match (interp-env x r)
+                  ['err 'err]
+                  [v1 v1])]
     [(list x y) (match (interp-env x r)
                   ['err 'err]
                   [v1 (match (interp-env y r)
@@ -135,7 +139,7 @@
                              [v2 (interp-prim2 p v1 v2)])])]
     [(cons x xs) (match (interp-env x r)
                    ['err 'err]
-                   [v1 (interp-prim2 p v1 (prim-n-helper p xs r))])]))
+                   [v1 (interp-prim2 p v1 (interp-primn p xs r))])]))
 
 
 ;; Env Id -> Value
