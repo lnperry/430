@@ -6,6 +6,8 @@
 (define rax 'rax)
 (define rbx 'rbx) ; tmp used for type tag tests
 (define r8  'r8)  ; scratch
+(define r9 'r9)
+(define r10 'r9)
 (define rsp 'rsp) ; stack
 (define rdi 'rdi) ; argument for C call
 
@@ -103,7 +105,8 @@
             (Je l1)
             (Mov rax val-false)
             (Label l1)))]
-    ['char->integer
+
+        ['char->integer
      (seq (assert-char rax c)
           (Sar rax char-shift)
           (Sal rax int-shift))]
@@ -150,10 +153,36 @@
                  (Mov 'rax val-true)
                  (Je l1)
                  (Mov 'rax val-false)
-                 (Label l1)))] 
+                 (Label l1)))]
+    ['integer?
+     (let ((l1 (gensym 'is_char)))
+       (seq (And rax mask-int)
+            (Xor rax type-int)
+            (Cmp rax 0)
+            (Mov rax val-true)
+            (Je l1)
+            (Mov rax val-false)
+            (Label l1)))]
 
-    ['integer? (seq)]
-    ['boolean? (seq)]))
+    ['boolean?
+     (let ((l1 (gensym 'is_char)))
+       ;; mask 3 lsb's, check equal
+       ;; compute if it is equal to true, store in reg
+       ;; compute if is is equal to false, store in reg
+       ;; (compile-if (or (equal? t) (equal? f)) val-true val-false)
+       (seq (Mov r10 rax) 
+            (And rax 7)  ;; #b111
+            (Xor rax 3)  ;; check = true 
+            (Mov r8 rax) ;; if r8==0 then its true
+            (And r10 7) ;; #b111
+            (Xor r10 7) ;; check = false
+            (And r8 r10)
+            (Cmp r8 0)
+            (Mov rax val-true)
+            (Je l1)
+            (Mov rax val-false)
+            (Label l1)))]
+    ))
 
 ;; Op2 Expr Expr CEnv -> Asm
 (define (compile-prim2 p e1 e2 c)
