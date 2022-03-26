@@ -46,8 +46,9 @@
     ;; TODO: implement let, let*, case, cond
     [(Let xs es e)   (seq)]
     [(Let* xs es e)  (seq)]
-    [(Case ev cs el) (seq)]
-    [(Cond cs el)    (seq)]))
+    [(Case ev cs el) (compile-case ev cs el c)]
+    [(Cond cs el)    (compile-cond cs el c)]
+    [_ e]))
 
 
 
@@ -127,9 +128,30 @@
           (Mov rax val-void))]
 
     ;; TODO: implement -, abs, integer?, boolean?, etc.
-    ['-        (seq)]
-    ['abs      (seq)]
-    ['not      (seq)]
+    ['abs
+          (let ((l1 (gensym 'nabs)))
+            (seq (assert-integer rax c)
+                 (Cmp 'rax 0)
+                 (Jg l1)
+                 (Mov 'rbx 'rax)
+                 (Sub 'rbx 'rax)
+                 (Sub 'rbx 'rax)
+                 (Mov 'rax 'rbx)
+                 (Label l1)))] 
+    ['-
+          (let ((l1 (gensym 'n-)))
+            (seq (assert-integer rax c)
+                 (Mov 'rbx 0)
+                 (Sub 'rbx 'rax)
+                 (Mov 'rax 'rbx)))]
+    ['not
+          (let ((l1 (gensym 'nnot)))
+            (seq (Cmp 'rax val-false)
+                 (Mov 'rax val-true)
+                 (Je l1)
+                 (Mov 'rax val-false)
+                 (Label l1)))] 
+
     ['integer? (seq)]
     ['boolean? (seq)]))
 
@@ -267,3 +289,45 @@
   (match (even? (length c))
     [#t 'raise_error]
     [#f 'raise_error_align]))
+
+;; COND
+(define (compile-cond cls els c)
+  (match cls
+    ['() (compile-e els c)]
+    [_ (compile-cond-helper cls els c)]))
+
+(define (compile-cond-helper cls els c)
+  (match cls
+    [(cons x xs) (match x
+	    [(Clause lCl rCl) (compile-if lCl rCl (compile-cond-helper xs els c) c)]
+      ['() els])]
+    ['() els]))
+
+;; CASE
+(define (compile-case e cls els c)
+  (match cls
+    [(cons x xs) (match x 
+     ['() els]
+     [(Clause lCl rCl) (compile-if (compile-contains? e lCl c) rCl (compile-case e xs els c) c)])]
+    ['() (compile-e els c)]))
+
+(define (compile-contains? e l c)
+  (match l
+	 ['() (Bool #f)]
+   [(cons x xs) 
+    (compile-if (compile-equal e x c) (Bool #t) (compile-contains? e xs c) c)]
+   [_ (compile-if (compile-equal e l c) (Bool #t) (Bool #f) c)]))
+
+(define (compile-equal e x c)
+  (let ((l1 (gensym 'equal?)))
+  (seq
+    (compile-e e c)
+    (Mov 'rbx 'rax)
+    (Mov rax (value->bits x))
+    (Cmp 'rbx 'rax)
+    (Mov 'rax val-true)
+    (Je l1)
+    (Mov 'rax val-false)
+    (Label l1))))
+
+

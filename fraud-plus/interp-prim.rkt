@@ -20,10 +20,11 @@
     ['eof-object?   (eof-object? v)]
     ['write-byte    (if (byte? v) (write-byte v) 'err)]
     ;; TODO: handle -, abs, integer?, etc.
-    ['- 'err]
-    ['abs 'err]
-    ['integer? 'err]
-    ['boolean? 'err]
+    ['-             (if (integer? v) (- v) 'err)]
+    ['abs           (if (integer? v) (abs v) 'err)]
+    ['not           (not v)]
+    ['integer? (integer? v)]
+    ['boolean? (boolean? v)]
     ))
 
 ;; Op2 Value Value -> Answer

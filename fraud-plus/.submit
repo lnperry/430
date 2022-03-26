@@ -1,0 +1,9 @@
+[course]
+id = 365197 
+name = "CMSC430"
+term = "Spring 2022"
+
+[assignment]
+id = 1929855
+name = "Assignment 4 - Let there be (Many) Bindings!"
+files = [ "compile.rkt", "interp.rkt", "interp-prim.rkt"]

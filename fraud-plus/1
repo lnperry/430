@@ -52,20 +52,14 @@
 
     ;; TODO: implement cond
     [(Cond cs e)
-     (let* ([cls (interp-cond-clauses cs r)]
-            [first (car cls)]
-            [second (cdr cls)])
-            ;;(list cls first second x))]
-            (match first
-                   ['err 'err]
-                   [v (if first 
-                        (match (interp-env second r)
-                          ['err 'err]
-                          [v v])
-                        (match (interp-env e r)
-                          ['err 'err]
-                          ;; wait interp else here "AST long as possible"
-                          [v v]))]))] 
+         (let ((cls (interp-cond-clauses cs r))) 
+           (if (car cls)
+             (match (interp-env (cdr cls) r)
+                    ['err 'err]
+                    [v v])
+             (match (interp-env e r)
+                    ['err 'err]
+                    [v v]))] ;; wait interp else here "AST long as possible"
     ;; TODO: implement case
     [(Case e cs el)
      (let ((cls (interp-case-clauses (interp e) cs))) 
@@ -117,20 +111,13 @@
   (match e
     [(cons x xs) (match x
                    [(Clause e1 e2) 
-                    ;; if err
-                    ;;   return err
-                    ;; else
-                    ;;   if true
-                    ;;     (cons true)
-                    ;;   else
-                    ;;     (recurse)
-                    (match (interp-env e1 r)
-                               ['err (cons 'err 'err)]
-                               [v (if v 
-                                    (cons #t e2)
-                                    (interp-cond-clauses xs r))])]
+                    (if (match (interp-env e1 r)
+                               ['err 'err]
+                               [v v])
 		      ;; consider (If e1 e2 e3) from our language
 		      ;; if e2 is false, then this will break bc it will return the else
+                      (cons #t e2) 
+                      (interp-cond-clauses xs r))]
                    ['() (cons #f #f)])]
     ['() (cons #f #f)]))
 
