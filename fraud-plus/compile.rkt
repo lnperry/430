@@ -208,7 +208,7 @@
 
 (define (compile-primN p es c)
   (match es 
-    ['() 0]
+    ['() (seq)]
     [(list x) (compile-prim1 p x c)]
     [(list x y)  (compile-prim2 p x y c)]
     [(cons x xs) (compile-prim2 p x (compile-primN p xs c) c)]))
