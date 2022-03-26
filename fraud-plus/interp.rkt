@@ -13,6 +13,24 @@
 
 ;; type REnv = (Listof (List Id Value))
 
+;; HINT: this is a function that may come in handy.
+;; It takes a list of expressions and environment
+;; and evaluates each expression in order.  If any
+;; expression produces 'err, the whole thing produces
+;; 'err; otherwise it produces a list of values.
+
+;; type Answer* = 'err | [Listof Value]
+;; [Listof Expr] Env -> Answer*
+(define (interp*-env es r)
+  (match es
+    ['() '()]
+    [(cons e es)
+     (match (interp-env e r)
+       ['err 'err]
+       [v (match (interp*-env es r)
+            ['err 'err]
+            [vs (cons v vs)])])]))
+
 ;; Expr -> Answer
 (define (interp e)
   (interp-env e '()))
@@ -37,7 +55,10 @@
              ['err 'err]
              [v2 (interp-prim2 p v1 v2)])])]
     ;; TODO: implement n-ary primitive +
-    [(PrimN p es) 'err]
+    [(PrimN p es) 
+     (match p
+            ['+ (foldl + 0 (interp*-env es r))]
+            [_ 'err])]
     [(If p e1 e2)
      (match (interp-env p r)
        ['err 'err]
@@ -94,23 +115,6 @@
     [(Let* xs es e) 'err]))
 
 
-;; HINT: this is a function that may come in handy.
-;; It takes a list of expressions and environment
-;; and evaluates each expression in order.  If any
-;; expression produces 'err, the whole thing produces
-;; 'err; otherwise it produces a list of values.
-
-;; type Answer* = 'err | [Listof Value]
-;; [Listof Expr] Env -> Answer*
-(define (interp*-env es r)
-  (match es
-    ['() '()]
-    [(cons e es)
-     (match (interp-env e r)
-       ['err 'err]
-       [v (match (interp*-env es r)
-            ['err 'err]
-            [vs (cons v vs)])])]))
 
 ;; Env Id -> Value
 (define (lookup r x)
