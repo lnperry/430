@@ -123,10 +123,10 @@
     ;; TODO: implement let, let*
     [(Let  xs es e) 'err]
     [(Let* xs es e) 
-     (interp-env (interp-let* (map cons xs es) e r) r)]
+     (interp-env (interp-let* (map cons xs es) e r) r)]))
 
     ;; TODO: remove this catch all, must be writing the code wrong
-    [_ (list "efrominterp" e)]))
+    ;; [_ (list "efrominterp" e)]))
 
 
 (define (interp-let x e1 e2 r)

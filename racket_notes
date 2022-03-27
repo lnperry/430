@@ -35,3 +35,8 @@ where langs are stored:
 
 runtime error include:
 (current-objs '("runtime.o"))
+
+(define (tell e)
+      (match (asm-interp (compile (parse e)))
+        ['err 'err]
+        [b (bits->value b)]))

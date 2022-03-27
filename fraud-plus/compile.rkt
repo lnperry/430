@@ -47,9 +47,11 @@
      (compile-let1 x e1 e2 c)]
     ;; TODO: implement let, let*, case, cond
     [(Let xs es e)   (seq)]
-    [(Let* xs es e)  (seq)]
+    [(Let* xs es e)  (compile-let* xs es e c)]
     [(Case ev cs el) (compile-case ev cs el c)]
     [(Cond cs el)    (compile-cond cs el c)]
+    ;; TODO: remove this catch all, code must be wrong
+    ;; TOFIX: (compile-e (traslate-primN-into-prim2-AST primN))
     [_ e]))
 
 
@@ -244,10 +246,6 @@
 
 
 
-
-
-
-
 ;; Expr Expr CEnv -> Asm
 (define (compile-begin e1 e2 c)
   (seq (compile-e e1 c)
@@ -262,7 +260,11 @@
        (compile-e e2 (cons x c))
        (Add rsp 8)))
 
-
+(define (compile-let* x e1 e2 c)
+  (seq (compile-e e1 c)
+       (Push rax)
+       (compile-e e2 (cons x c))
+       (Add rsp 8)))
 
 ;; CEnv -> Asm
 ;; Pad the stack to be aligned for a call
