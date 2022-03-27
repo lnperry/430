@@ -19,19 +19,6 @@
 ;; expression produces 'err, the whole thing produces
 ;; 'err; otherwise it produces a list of values.
 
-;; type Answer* = 'err | [Listof Value]
-;; [Listof Expr] Env -> Answer*
-(define (interp*-env es r)
-  (match es
-    ['() '()]
-    [(cons e es)
-     (match (interp-env e r)
-       ['err 'err]
-       [v (match (interp*-env es r)
-            ['err 'err]
-            [vs (cons v vs)])])]))
-
-
 (define (foldl-err proc proc2 init lst)
   (match lst
     ['() init]
@@ -121,24 +108,43 @@
      (interp-let x e1 e2 r)]
 
     ;; TODO: implement let, let*
-    [(Let  xs es e) 'err]
+    ;; NOTE: think can do interp-env* on es, to verify no bindings
+    ;; and then just call Let*?
+    ;; Is there a better way?
+    ;; Does it matter if there is a better way?
+    ;; JOSE: "implement first, optimize later"
+    [(Let  xs es e) 
+     (match (interp*-env es r) ;; check no unbinded vars
+       ['err 'err]
+       [_ (interp-env (translate-let* (map cons xs es) e r) r)])]
     [(Let* xs es e) 
-     (interp-env (interp-let* (map cons xs es) e r) r)]))
+     (interp-env (translate-let* (map cons xs es) e r) r)]))
 
-    ;; TODO: remove this catch all, must be writing the code wrong
+    ;; NOTE: you must add this here if you're passing the AST back into interp
     ;; [_ (list "efrominterp" e)]))
 
+;; type Answer* = 'err | [Listof Value]
+;; [Listof Expr] Env -> Answer*
+(define (interp*-env es r)
+  (match es
+    ['() '()]
+    [(cons e es)
+     (match (interp-env e r)
+       ['err 'err]
+       [v (match (interp*-env es r)
+            ['err 'err]
+            [vs (cons v vs)])])]))
 
 (define (interp-let x e1 e2 r)
   (match (interp-env e1 r)
     ['err 'err]
     [v (interp-env e2 (ext r x v))]))
 
-(define (interp-let* pairs e r)
+(define (translate-let* pairs e r)
     (match pairs
-           ['() '()]
+           ['() e]
            [(list a) (Let (list (car a)) (list (cdr a)) e)]
-           [(cons x xs) (Let (list (car x)) (list (cdr x)) (interp-let* xs e r))]))
+           [(cons x xs) (Let (list (car x)) (list (cdr x)) (translate-let* xs e r))]))
 
 (define (interp-primn p es r)
   (match es
@@ -165,7 +171,7 @@
      (if (symbol=? x y)
          val
          (lookup r x))]
-    [_ (list "lookup" "r" r "x" x)]))
+    [_ 'err]))
 
 ;; Env Id Value -> Env
 (define (ext r x v)
