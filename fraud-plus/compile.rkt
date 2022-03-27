@@ -47,7 +47,7 @@
      (compile-let1 x e1 e2 c)]
     ;; TODO: implement let, let*, case, cond
     [(Let xs es e)   (seq)]
-    [(Let* xs es e)  (compile-let* xs es e c)]
+    [(Let* xs es e)  (compile-e (translate-let* (map cons xs es) e c) c)]
     [(Case ev cs el) (compile-case ev cs el c)]
     [(Cond cs el)    (compile-cond cs el c)]
     ;; TODO: remove this catch all, code must be wrong
@@ -260,11 +260,11 @@
        (compile-e e2 (cons x c))
        (Add rsp 8)))
 
-(define (compile-let* x e1 e2 c)
-  (seq (compile-e e1 c)
-       (Push rax)
-       (compile-e e2 (cons x c))
-       (Add rsp 8)))
+(define (translate-let* pairs e c)
+  (match pairs
+    ['() '()]
+    [(list a) (Let (list (car a)) (list (cdr a)) e)]
+    [(cons x xs) (Let (list (car x)) (list (cdr x)) (translate-let* xs e c))]))
 
 ;; CEnv -> Asm
 ;; Pad the stack to be aligned for a call
