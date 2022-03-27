@@ -123,31 +123,22 @@
     ;; TODO: implement let, let*
     [(Let  xs es e) 'err]
     [(Let* xs es e) 
-     (match xs
-       ['() (interp-env e r)]
-       [_ (interp-let* xs es e r)])]
+     (interp-env (interp-let* (map cons xs es) e r) r)]
 
     ;; TODO: remove this catch all, must be writing the code wrong
-    [_ e]))
+    [_ (list "efrominterp" e)]))
+
 
 (define (interp-let x e1 e2 r)
   (match (interp-env e1 r)
     ['err 'err]
     [v (interp-env e2 (ext r x v))]))
 
-(define (interp-let* xs es e r)
-  (match es
-    ['() e]
-    [(cons y ys) 
-     (match xs 
-       [(cons z zs) 
-        (match (interp-env y r)
-          ['err 'err]
-          [v1 (let ((new-e (ext r z v1))) (interp-env (interp-let* zs ys e (append r new-e)) new-e))]
-          [_ (list "y" y "ys" ys "z" z "zs" "xs" xs "es" es "e" e "r")])])]
-    [_ (list "e" e "xs" xs "es" es "r" r )]))
-          ;;[v1 (list "v1" v1 "y" y "ys" ys "z" z "zs" "xs" xs "es" es "e" e "r")])])])) 
-              ;;[v2 (interp-env (interp-let* zs ys e r) (ext r z v2))])])])]))
+(define (interp-let* pairs e r)
+    (match pairs
+           ['() '()]
+           [(list a) (Let (list (car a)) (list (cdr a)) e)]
+           [(cons x xs) (Let (list (car x)) (list (cdr x)) (interp-let* xs e r))]))
 
 (define (interp-primn p es r)
   (match es
