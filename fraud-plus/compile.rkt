@@ -46,7 +46,7 @@
     [(Let (list x) (list e1) e2)
      (compile-let1 x e1 e2 c)]
     ;; TODO: implement let, let*, case, cond
-    [(Let xs es e)   (seq)]
+    [(Let xs es e)   (compile-e (translate-let* (map cons xs es) e c) c)] 
     [(Let* xs es e)  (compile-e (translate-let* (map cons xs es) e c) c)]
     [(Case ev cs el) (compile-case ev cs el c)]
     [(Cond cs el)    (compile-cond cs el c)]
@@ -63,7 +63,9 @@
 ;; Id CEnv -> Asm
 (define (compile-variable x c)
   (let ((i (lookup x c)))
-    (seq (Mov rax (Offset rsp i)))))
+    (match i
+      ['err (print (list "compile-var" (seq (Jmp (error-label c)))))]
+      [_    (seq (Mov rax (Offset rsp i)))])))
 
 ;; Op0 CEnv -> Asm
 (define (compile-prim0 p c)
@@ -283,11 +285,14 @@
 ;; Id CEnv -> Integer
 (define (lookup x cenv)
   (match cenv
-    ['() (error "undefined variable:" x)]
+    ['() 'err]
     [(cons y rest)
-     (match (eq? x y)
-       [#t 0]
-       [#f (+ 8 (lookup x rest))])]))
+     (cond 
+       [(eq? 'err y) 'err]
+       [else 
+         (match (eq? x y)
+           [#t 0]
+           [#f (+ 8 (lookup x rest))])])]))
 
 (define (assert-type mask type)
   (λ (arg c)
