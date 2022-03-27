@@ -90,9 +90,9 @@
     [(Case e cs el)
      (match (interp-env e r)
        ['err 'err]
-       [_ 
+       [m 
          (let* (
-           (cls (interp-case-clauses e cs r))
+           (cls (interp-case-clauses m cs))
            (first (car cls))
            (second (cdr cls)))
              (match first
@@ -117,14 +117,18 @@
     ;; Does it matter if there is a better way?
     ;; JOSE: "implement first, optimize later"
     [(Let  xs es e) 
-     (match (interp*-env es r) ;; check no unbinded vars
-       ['err 'err]
-       [_ (interp-env (translate-let* (map cons xs es) e r) r)])]
+      (match (interp*-env es r) ;; check no unbinded vars
+        ['err 'err]
+        [_ (interp-env (translate-let* (map cons xs es) e r) r)])]
+
+    ;; (interp-env (translate-let* (map cons xs es) e r) r)]
+
     [(Let* xs es e) 
-     (interp-env (translate-let* (map cons xs es) e r) r)]))
+     (interp-env (translate-let* (map cons xs es) e r) r)]
 
     ;; NOTE: you must add this here if you're passing the AST back into interp
-    ;; [_ (list "efrominterp" e)]))
+    ;; NOTE: adding this back for case issue
+    [_ e]))
 
 ;; type Answer* = 'err | [Listof Value]
 ;; [Listof Expr] Env -> Answer*
@@ -202,33 +206,39 @@
     ['() (cons #f #f)]))
 
 
-(define (interp-case-clauses m e r)
-  (match e
-    [(cons x xs) (match x
-                   ['err 'err]
-                   [(Clause e1 e2) 
-                    (let ((matchval (find-clause-match m e1 e2 r)))
-                      (match (car matchval)
-                             ['err (cons 'err 'err)]
-                             [v (if (car matchval) 
-                                  (cons #t (cdr matchval)) 
-                                  (interp-case-clauses m xs r))]))]
-                   ['() (cons #f #f)])]
+(define (interp-case-clauses m cs)
+  (match cs
+    [(cons x xs) 
+     (match x
+       [(Clause e1 e2) 
+         (let ((matchval (find-clause-match m e1 e2)))
+           (if (car matchval) 
+            (cons #t (cdr matchval)) 
+            (interp-case-clauses m xs)))]
+       ['() (cons #f #f)])]
     ['() (cons #f #f)]))
 
-(define (find-clause-match m e1 e2 r)
-  (match (interp-env m r)
-    ['err (cons 'err 'err)]
-    [v
-      (match e1
-    ;; if bool? or int?
-    ;;   proceed w norm check
-    ;; else
-    ;;   err
-      [(cons x xs)
-       (if (or (boolean? x) (integer? x)) 
-         (if (equal? v x)
-           (cons #t e2);; if returned, interp in fx above
-           (find-clause-match m xs e2 r))
-         (cons 'err 'err))]
-      ['() (cons #f #f)])]))
+(define (find-clause-match m e1 e2)
+  (match e1
+    [(cons x xs) 
+     (if (equal? m (interp x))
+       (cons #t e2);; if returned, interp in fx above
+       (find-clause-match m xs e2))]
+    ['() (cons #f #f)]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
