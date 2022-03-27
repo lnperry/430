@@ -124,7 +124,13 @@
 
     ;; TODO: implement let, let*
     [(Let  xs es e) 'err]
-    [(Let* xs es e) 'err]))
+    [(Let* xs es e) 
+     (match xs
+       ['() (interp-env e r)]
+       [_ (interp-let* xs es e r)])]
+
+    ;; TODO: remove this catch all, must be writing the code wrong
+    [_ e]))
 
 (define (interp-primn p es r)
   (match es
@@ -142,13 +148,29 @@
                    [v1 (interp-prim2 p v1 (interp-primn p xs r))])]))
 
 
+(define (interp-let* xs es e r)
+  (match es
+    ['() e]
+    [(cons y ys) 
+     (match xs 
+       [(cons z zs) 
+        (match (interp-env y r)
+          ['err 'err]
+          [v1 (let ((new-e (ext r z v1))) (interp-env (interp-let* zs ys e (append r new-e)) new-e))]
+          [_ (list "y" y "ys" ys "z" z "zs" "xs" xs "es" es "e" e "r")])])]
+    [_ (list "e" e "xs" xs "es" es "r" r )]))
+          ;;[v1 (list "v1" v1 "y" y "ys" ys "z" z "zs" "xs" xs "es" es "e" e "r")])])])) 
+              ;;[v2 (interp-env (interp-let* zs ys e r) (ext r z v2))])])])]))
+
+
 ;; Env Id -> Value
 (define (lookup r x)
   (match r
     [(cons (list y val) r)
      (if (symbol=? x y)
          val
-         (lookup r x))]))
+         (lookup r x))]
+    [_ (list "lookup" "r" r "x" x)]))
 
 ;; Env Id Value -> Env
 (define (ext r x v)
