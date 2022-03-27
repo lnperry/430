@@ -88,11 +88,14 @@
                           [v v]))]))] 
     ;; TODO: implement case
     [(Case e cs el)
-     (let* (
-            (cls (interp-case-clauses e cs r))
-            (first (car cls))
-            (second (cdr cls)))
-       (match first
+     (match (interp-env e r)
+       ['err 'err]
+       [_ 
+         (let* (
+           (cls (interp-case-clauses e cs r))
+           (first (car cls))
+           (second (cdr cls)))
+             (match first
               ['err 'err]
               [v (if first
                    (match (interp-env second r)
@@ -100,7 +103,7 @@
                           [v v])
                    (match (interp-env el r)
                           ['err 'err]
-                          [v v]))]))]
+                          [v v]))]))])]
 
     ;; TODO: this works for just a single binding
     ;; but you need to make it work in general

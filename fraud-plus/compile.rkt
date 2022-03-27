@@ -46,7 +46,7 @@
     [(Let (list x) (list e1) e2)
      (compile-let1 x e1 e2 c)]
     ;; TODO: implement let, let*, case, cond
-    [(Let xs es e)   (compile-e (translate-let* (map cons xs es) e c) c)] 
+    [(Let xs es e)  (compile-e (translate-let* (map cons xs es) e c) c)]
     [(Let* xs es e)  (compile-e (translate-let* (map cons xs es) e c) c)]
     [(Case ev cs el) (compile-case ev cs el c)]
     [(Cond cs el)    (compile-cond cs el c)]
@@ -54,6 +54,14 @@
     ;; TOFIX: (compile-e (traslate-primN-into-prim2-AST primN))
     [_ e]))
 
+(define (compile-let-helper xs es e c)
+  (match xs 
+    ['() e]
+    [(cons l ls)
+     (match es
+     ['() e]
+     [(cons n ns)
+       (compile-let1 l n (compile-let-helper ls ns e (cons l c)) c)])]))
 
 
 ;; Value -> Asm
@@ -219,7 +227,6 @@
     [(cons x xs) (compile-prim2 p (compile-primN p xs c) x c)]))
 
 
-
 ;; HINT: Another potentially helpful function that
 ;; emits code to execute each expression and push
 ;; all the values on to the stack, analogous to interp*-env
@@ -264,7 +271,7 @@
 
 (define (translate-let* pairs e c)
   (match pairs
-    ['() '()]
+    ['() e]
     [(list a) (Let (list (car a)) (list (cdr a)) e)]
     [(cons x xs) (Let (list (car x)) (list (cdr x)) (translate-let* xs e c))]))
 
