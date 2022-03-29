@@ -105,30 +105,22 @@
                           ['err 'err]
                           [v v]))]))])]
 
-    ;; TODO: this works for just a single binding
-    ;; but you need to make it work in general
     [(Let (list x) (list e1) e2)
      (interp-let x e1 e2 r)]
 
-    ;; TODO: implement let, let*
-    ;; NOTE: think can do interp-env* on es, to verify no bindings
-    ;; and then just call Let*?
-    ;; Is there a better way?
+    ;; NOTE: think can do interp-env* on es, to verify no bindings are missing?
+    ;; and then just call Let*? Is there a better way?
     ;; Does it matter if there is a better way?
     ;; JOSE: "implement first, optimize later"
-    [(Let  xs es e) 
-      (match (interp*-env es r) ;; check no unbinded vars
-        ['err 'err]
-        [_ (interp-env (translate-let* (map cons xs es) e r) r)])]
-
-    ;; (interp-env (translate-let* (map cons xs es) e r) r)]
+    [(Let xs es e) 
+     ;;  NOTE: this is what I had before, explanation above
+     ;;  (match (interp*-env es r) ;; check no unbinded vars
+     ;;    ['err 'err]
+     ;;    [_ (interp-env (translate-let (map cons xs es) e r) r)])]
+      (interp-env (translate-let (map cons xs es) e r) r)]
 
     [(Let* xs es e) 
-     (interp-env (translate-let* (map cons xs es) e r) r)]
-
-    ;; NOTE: you must add this here if you're passing the AST back into interp
-    ;; NOTE: adding this back for case issue
-    [_ e]))
+     (interp-env (translate-let (map cons xs es) e r) r)]))
 
 ;; type Answer* = 'err | [Listof Value]
 ;; [Listof Expr] Env -> Answer*
@@ -147,11 +139,11 @@
     ['err 'err]
     [v (interp-env e2 (ext r x v))]))
 
-(define (translate-let* pairs e r)
+(define (translate-let pairs e r)
     (match pairs
            ['() e]
            [(list a) (Let (list (car a)) (list (cdr a)) e)]
-           [(cons x xs) (Let (list (car x)) (list (cdr x)) (translate-let* xs e r))]))
+           [(cons x xs) (Let (list (car x)) (list (cdr x)) (translate-let xs e r))]))
 
 (define (interp-primn p es r)
   (match es
@@ -221,7 +213,7 @@
 (define (find-clause-match m e1 e2)
   (match e1
     [(cons x xs) 
-     (if (equal? m (interp x))
+     (if (equal? m x)
        (cons #t e2);; if returned, interp in fx above
        (find-clause-match m xs e2))]
     ['() (cons #f #f)]))
