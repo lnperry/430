@@ -211,8 +211,6 @@
 (define (compile-primN p es c)
   (match es 
     ['() (seq (Mov rax 0))]
-    [(list x) (seq (compile-e x c)
-                   (assert-integer rax c))]
     [(cons x xs) (compile-prim2 p (compile-primN p xs c) x c)]))
 
 
