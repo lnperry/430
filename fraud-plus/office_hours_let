@@ -1,0 +1,5 @@
+Example A: (let ((x 42)) (let* ((x 21) (y x)) y)) => 21
+Example B: (let ((x 42)) (let ((x 21) (y x)) y)) => 42
+
+in example A, let* is rebinding x to 21
+in example B, the nested let is grabbing the 42 that was already binded because we're evaluating the body of the outer let
