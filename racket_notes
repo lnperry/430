@@ -40,3 +40,14 @@ runtime error include:
       (match (asm-interp (compile (parse e)))
         ['err 'err]
         [b (bits->value b)]))
+
+require for a5:
+(begin (require "parse.rkt" "interp.rkt" "compile.rkt" "types.rkt" a86/interp
+rackunit a86/printer "ast.rkt" "heap.rkt" "heap.rkt"
+                   "env.rkt"
+                   "unload.rkt"
+                   "interp-prims-heap.rkt"
+                   "ast.rkt"
+                   "unload-bits-asm.rkt") (current-objs '("runtime.o")) (define
+(run p)
+          (unload/free (asm-interp (compile (parse p))))))
