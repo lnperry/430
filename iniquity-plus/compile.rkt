@@ -51,15 +51,19 @@
   (match fun
     [(FunPlain xs e)
      (seq (Label (symbol->label f))
-          ;; TODO: check arity
-          (Cmp r8 (length xs))
+          (Cmp r8 (length xs)) ; check arity
           (Jne 'raise_error_align)
           (compile-e e (reverse xs))
           (Add rsp (* 8 (length xs)))
           (Ret))]
     ;; TODO: handle other kinds of functions
-    [_
-     (seq)]))
+    [(FunRest xs x e) 
+     (seq (Label (symbol->label f))
+          (Cmp r8 (length xs)) ; check arity
+          (Jne 'raise_error_align)
+          (compile-e e (reverse (cons x xs)))
+          (Add rsp (* 8 (+ (length xs) 1)))
+          (Ret))]))
 
 
 
@@ -169,11 +173,18 @@
 ;; The return address is placed above the arguments, so callee pops
 ;; arguments and return address is next frame
 (define (compile-app f es c)
+ ;; pop 
   (let ((r (gensym 'ret)))
     (seq (Lea rax r)
          (Push rax)
+         ;; push empty list to stack
+         (compile-value '()) ; put empty list in rax
+         (Push rax) ; push rax
          (compile-es es (cons #f c))
          ;; TODO: communicate argument count to called function
+         ;; push empty list
+         ;(compile-value '()) ; put empty list in rax
+         ;(Push rax) ; push rax
          (Mov r8 (length es))
          (Jmp (symbol->label f))
          (Label r))))
