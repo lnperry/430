@@ -279,14 +279,22 @@
 
        ;; start by pushing car
        ;;(assert-cons rax)
-       (Add r8 2)
+       (Add r8 3)
        (Xor rax type-cons)
        (Mov r9 (Offset rax 8))
        ;(Add r9 1000)
        (Push r9)
        (Mov rax (Offset rax 0))
-       (Push rax)
-       (assert-integer rax))))
+       ;; indexing into (cons 3 4)
+       (assert-cons rax)
+       (Xor rax type-cons)
+       (Mov r9 (Offset rax 8))
+       (Push r9)
+       ;; index 4?
+       (Mov rax (Offset rax 0))
+       ;; push 4?
+       (Push rax))))
+       ;(assert-integer rax))))
        ;(Push r9))))
        ;(Push r9)
        ;(Mov rax (Offset rax 0))
