@@ -8,9 +8,7 @@
 (define rsp 'rsp) ; stack
 (define rdi 'rdi) ; arg
 (define r8 'r8) ; scratch for arity-check
-(define r9 'r9) ; scratch for pop loop
-(define r10 'r10) ; scratch for pop loop
-
+(define r9 'r9)
 ;; type CEnv = [Listof Variable]
 
 ;; Prog -> Asm
@@ -62,20 +60,10 @@
     [(FunRest xs x e) 
     (let ((labelEmpty (gensym 'empty)))
      (seq (Label (symbol->label f))
-          (Cmp r8 (length xs)) ; check arity
-          (Jl 'raise_error_align)
-         ; (Cmp r8 (length xs))
-         ; (Je labelEmpty)
-          ;; push empty list to stack
-          ;; TODO: replace with n-m 
-          ;;       args pushed to stack
-          ;(compile-e (Empty) '())
-          ;(Push rax)
-          ;; TODO: handle empty list as spec case?
+          ;; r8=num args from caller, xs=num args in definition
+          (Cmp r8 (length xs))   
+          (Jl 'raise_error_align) ; check arity
           (pop-args (length xs) e x xs)
-         ; (Label labelEmpty)
-         ; (compile-e (Empty) '())
-         ; (Push rax)
          ; (compile-e e (cons x (reverse xs)))
           ;; add 1 because empty list is now in stack
          ; (Add rsp (* 8 (+ 1 (length xs))))
@@ -87,51 +75,71 @@
 ; rax=&rbx
 ; r9=0
 ; r8=0
-;
-;
-;
-;
+
+
+; either xs='(), xs=(list x) or xs = (list x ...)
+; when xs='(), you want to return '()
+; when xs=(list x) you want to return (cons 5 '())
+; when xs=(list x ...) you want to return (cons 5 (cons 6 '()))
+
 (define (pop-args n e x xs)
   (let ((loopLabel (gensym 'loop))
         (condLabel (gensym 'cond))
         (labelDone (gensym 'done)))
     (seq 
-         (compile-e (Empty) '()) ; rax='()
-         (Cmp r8 n)
-         (Je labelDone)
-         (Mov r9 r8)
-         (Sub r9 n)
-         ;; if r9=1, special case just empty list and elt
-         (Mov r8 r9) ; save how many args we popped
-         (Jmp condLabel)
-         (Label loopLabel)
-         ;; need to tag second thing in cons cell as cons cell
-         (Mov (Offset rbx 0) rax)
-         (Pop rax)
-         (Mov (Offset rbx 8) rax)
-         (Mov rax rbx)
-         (Or rax type-cons)
-         (Add rbx 16)
-         (Sub r9 1)
-         ;; check loop condition
-         (Label condLabel)
-         (Cmp r9 0)
-         (Jne loopLabel)
-         ;; Push rax list back onto stack
-         (Push rax)
-         ;; invoke function
-         (compile-e e (cons x (reverse xs)))
-         ;; TODO: clean up heap???
-         ;; pop rest of stack args off
-         (Sal r8 3)
-         (Add rsp r8)
-         (Ret)
-         (Label labelDone)
-         (Push rax)
-         (compile-e e (cons x (reverse xs)))
-         (Add rsp (* 8 (+ 1 (length xs))))
-         (Ret))))
-         ;; cons from prim
+     ;; KISS: just pop as many args as needed, append empty list
+     (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
+     (Mov r9 r8)
+     (Jmp condLabel)
+     (Label loopLabel)
+     (Pop rax)
+     (Sub r9 1)
+     ;check loop condition
+     (Label condLabel)
+     (Cmp r9 0)
+     (Jne loopLabel)
+     (compile-value '())
+     (Push rax)
+     (compile-e e (cons x (reverse xs)))
+     (Add rsp (* 8 (+ 1 (length xs))))
+     (Ret))))
+
+         ; (compile-e (Empty) '()) ; rax='()
+         ; (Cmp r8 n)
+         ; (Je labelDone)
+         ; (Mov r9 r8)
+         ; (Sub r9 n)
+         ; if r9=1, special case just empty list and elt
+         ; (Mov r8 r9) ; save how many args we popped
+         ; (Jmp condLabel)
+         ; (Label loopLabel)
+         ; need to tag second thing in cons cell as cons cell
+         ; (Mov (Offset rbx 0) rax)
+         ; (Pop rax)
+         ; (Mov (Offset rbx 8) rax)
+         ; (Mov rax rbx)
+         ; (Or rax type-cons)
+         ; (Add rbx 16)
+         ; (Sub r9 1)
+         ; check loop condition
+         ; (Label condLabel)
+         ; (Cmp r9 0)
+         ; (Jne loopLabel)
+         ; Push rax list back onto stack
+         ; (Push rax)
+         ; invoke function
+         ; (compile-e e (cons x (reverse xs)))
+         ; TODO: clean up heap???
+         ; pop rest of stack args off
+         ; (Sal r8 3)
+         ; (Add rsp r8)
+         ; (Ret)
+         ; (Label labelDone)
+         ; (Push rax)
+         ; (compile-e e (cons x (reverse xs)))
+         ; (Add rsp (* 8 (+ 1 (length xs))))
+         ; (Ret))))
+         ; cons from prim
 
 ;; Expr CEnv -> Asm
 (define (compile-e e c)
@@ -242,12 +250,7 @@
   (let ((r (gensym 'ret)))
     (seq (Lea rax r)
          (Push rax)
-         ;; push empty list to stack
          (compile-es es (cons #f c))
-         ;; TODO: communicate argument count to called function
-         ;; push empty list
-         ;(compile-value '()) ; put empty list in rax
-         ;(Push rax) ; push rax
          (Mov r8 (length es))
          (Jmp (symbol->label f))
          (Label r))))
