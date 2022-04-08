@@ -93,8 +93,7 @@
      (compile-value '())
      (Cmp r9 0)
      (Je labelEmpty)
-     ; rax='()
-     (Jmp condLabel)
+     (Jmp condLabel) ; rax='()
      (Label loopLabel)
      (Mov (Offset rbx 0) rax)
      (Pop rax)
@@ -112,46 +111,9 @@
      (Push rax)
      (compile-e e (cons x (reverse xs)))
      ; always + (len xs)+1 
-     ; because after push/pop rsp always at (len xs)+(len (list '()))
+     ; because after push/pop rsp always at (+ (len xs) (len (list x)))
      (Add rsp (* 8 (+ 1 (length xs))))
      (Ret))))
-
-         ; (compile-e (Empty) '()) ; rax='()
-         ; (Cmp r8 n)
-         ; (Je labelDone)
-         ; (Mov r9 r8)
-         ; (Sub r9 n)
-         ; if r9=1, special case just empty list and elt
-         ; (Mov r8 r9) ; save how many args we popped
-         ; (Jmp condLabel)
-         ; (Label loopLabel)
-         ; need to tag second thing in cons cell as cons cell
-         ; (Mov (Offset rbx 0) rax)
-         ; (Pop rax)
-         ; (Mov (Offset rbx 8) rax)
-         ; (Mov rax rbx)
-         ; (Or rax type-cons)
-         ; (Add rbx 16)
-         ; (Sub r9 1)
-         ; check loop condition
-         ; (Label condLabel)
-         ; (Cmp r9 0)
-         ; (Jne loopLabel)
-         ; Push rax list back onto stack
-         ; (Push rax)
-         ; invoke function
-         ; (compile-e e (cons x (reverse xs)))
-         ; TODO: clean up heap???
-         ; pop rest of stack args off
-         ; (Sal r8 3)
-         ; (Add rsp r8)
-         ; (Ret)
-         ; (Label labelDone)
-         ; (Push rax)
-         ; (compile-e e (cons x (reverse xs)))
-         ; (Add rsp (* 8 (+ 1 (length xs))))
-         ; (Ret))))
-         ; cons from prim
 
 ;; Expr CEnv -> Asm
 (define (compile-e e c)
@@ -269,8 +231,108 @@
 
 ;; Id [Listof Expr] Expr CEnv -> Asm
 (define (compile-apply f es e c)
-  ;; TODO: implement apply
-  (seq))
+  (let ((r (gensym 'ret)))
+    (seq (Lea rax r)
+         (Push rax)
+         ; need to update r8 w length of all args together
+         (% "Moving length of es into r8")
+         (Mov r8 (length es))
+         (compile-es es (cons #f c))
+         ;;(% "Start of compile-e")
+         (compile-e e (cons #f c)) ; leaves cons ptr in rax
+         (% "Start of compile-e-list")
+         (compile-e-list e c)
+         (Jmp (symbol->label f))
+         (Label r))))
+;
+; rsp-------------------------------------------v
+;  |  |  '()   |  60  |  | | | | | |    | 60  | 5  |ret1094
+; rbx-------------------^
+; rax=-----^
+; r9=60
+; r9=0
+; r8=1
+
+
+; ['cons
+     ; (seq (Mov (Offset rbx 0) rax)
+          ; (Pop rax)
+          ; (Mov (Offset rbx 8) rax)
+          ; (Mov rax rbx)
+          ; (Or rax type-cons)
+          ; (Add rbx 16))]
+;
+; ['car
+     ; (seq (assert-cons rax)
+          ; (Xor rax type-cons)
+          ; (Mov rax (Offset rax 8)))]
+    ; ['cdr
+     ; (seq (assert-cons rax)
+          ; (Xor rax type-cons)
+          ; (Mov rax (Offset rax 0)))]
+;
+
+(define (compile-e-list e c)
+  (let ((condLabel (gensym 'condLabel))
+        (loopLabel (gensym 'loopLabel)))
+  (seq ;; need special case for when singleton empty list '()
+
+       ;; start by pushing car
+       ;;(assert-cons rax)
+       (Xor rax type-cons)
+       (Mov r9 (Offset rax 8))
+       ;(Add r9 1000)
+       (Push r9)
+       (Add r8 2)
+       ;(Mov r9 (Offset rax 8))
+       (assert-integer r9))))
+       ;(assert-cons rax))))
+       ;(Add r8 1)
+       ;(Mov r9 (Offset rax 8)))))
+       ;(assert-cons r9)
+       ;(Xor r9 type-cons)
+       ;(Mov r9 (Offset rbx -8))
+       ;(Mov r9 rax))))
+       ; (Xor r9 type-cons)
+       ; (Mov r9 (Offset r9 8))
+        ;(assert-cons r9)
+       ;(Push r9))
+       ;(Add r8 1)))
+ 
+
+;; [Listof Expr] CEnv -> Asm
+; (define (compile-e-list e c)
+  ; (let ((condLabel (gensym 'condLabel))
+        ; (loopLabel (gensym 'loopLabel)))
+  ; (seq ;; need special case for when singleton empty list '()
+;
+       ; start by pushing car
+       ;(assert-cons rax)
+       ; (Mov r9 rax)
+       ; (assert-cons r9)
+       ; (Xor r9 type-cons)
+       ; (Mov r9 (Offset r9 8))
+       ; (Push r9)
+       ; (Add r8 1))))
+       ; now start looping
+       ;;(Jmp condLabel) 
+       ;;(Label loopLabel)
+       ;;(Add rax 8)
+       ;; asserts replaced with empty? or cons? because (cons? '()) = #f
+       ;;(assert-cons rax)
+       ;;(Mov r9 rax)
+       ; (Xor r9 type-cons)
+       ; (Mov r9 (Offset r9 8))
+       ; (Push r9)
+       ; (Push rax)
+       ; (Add r8 1) ; increment num args pushed to stack for arity check
+       ;check loop condition
+       ; (Label condLabel)
+       ; is second arg empy list? then we're done
+       ; (Mov r9 (Offset rax 0))
+       ; (Cmp r9 (imm->bits '()))
+       ; (Jne loopLabel))))
+
 
 ;; [Listof Expr] CEnv -> Asm
 (define (compile-es es c)
@@ -309,11 +371,13 @@
     (number->string (eq-hash-code s) 16))))
 
 ; (begin (require "parse.rkt" "interp.rkt" "types.rkt" a86/interp
-                ; rackunit a86/printer "ast.rkt" "heap.rkt" "heap.rkt"
-                ; "env.rkt"
-                ; "interp-prims-heap.rkt"
-                ; "ast.rkt"
-                ; "unload-bits-asm.rkt") (current-objs '("runtime.o")) (define
-                                                                       ; (run p)
-                                                                       ; (unload/free (asm-interp (compile (parse p))))))
-;(run '[(define (f y . xs) y) (f 5)])
+                 ; rackunit a86/printer "ast.rkt" "heap.rkt" "heap.rkt"
+                 ; "env.rkt"
+                 ; "interp-prims-heap.rkt"
+                 ; "ast.rkt"
+                 ; "unload-bits-asm.rkt") (current-objs '("runtime.o")) (define
+                                                                        ; (run p)
+                                                                        ; (unload/free (asm-interp (compile (parse p))))))
+; (run '[(define (f y . xs) y) (f 5)])
+;;(compile (parse '[(define (f b) a) (apply f 5 (cons 6 '()))]))
+;(run '[(define (f) 1) (apply f (cons 1 (cons 2 '())))])
