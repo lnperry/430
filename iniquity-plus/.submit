@@ -1,0 +1,9 @@
+[course]
+id = 365197 
+name = "CMSC430"
+term = "Spring 2022"
+
+[assignment]
+id = 1974895
+name = "Assignment 5"
+files = [ "compile.rkt"]
