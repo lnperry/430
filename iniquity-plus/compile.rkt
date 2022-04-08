@@ -60,9 +60,12 @@
           (Ret))]
     ;; TODO: handle other kinds of functions
     [(FunRest xs x e) 
+    (let ((labelEmpty (gensym 'empty)))
      (seq (Label (symbol->label f))
           (Cmp r8 (length xs)) ; check arity
           (Jl 'raise_error_align)
+         ; (Cmp r8 (length xs))
+         ; (Je labelEmpty)
           ;; push empty list to stack
           ;; TODO: replace with n-m 
           ;;       args pushed to stack
@@ -70,27 +73,36 @@
           ;(Push rax)
           ;; TODO: handle empty list as spec case?
           (pop-args (length xs) e x xs)
-          ;;(compile-e e (cons x (reverse xs)))
+         ; (Label labelEmpty)
+         ; (compile-e (Empty) '())
+         ; (Push rax)
+         ; (compile-e e (cons x (reverse xs)))
           ;; add 1 because empty list is now in stack
-          ;;(Add rsp (* 8 (length xs)))
-          (Ret))]))
+         ; (Add rsp (* 8 (+ 1 (length xs))))
+          ))]))
 ;
-; rsp------------------v
-;  |  |'() |3 |  |  |3|2|1|ret
-; rbx----------^
+; rsp------------v
+;  |  | | |  |  |'()|1|ret
+; rbx-------^
 ; rax=&rbx
-; r9=1
-; r8=2
+; r9=0
+; r8=0
+;
 ;
 ;
 ;
 (define (pop-args n e x xs)
   (let ((loopLabel (gensym 'loop))
-        (condLabel (gensym 'cond)))
-    (seq (Mov r9 r8)
-         (Sub r9 n)
-         (Mov r8 r9) ; save how many args we popped
+        (condLabel (gensym 'cond))
+        (labelDone (gensym 'done)))
+    (seq 
          (compile-e (Empty) '()) ; rax='()
+         (Cmp r8 n)
+         (Je labelDone)
+         (Mov r9 r8)
+         (Sub r9 n)
+         ;; if r9=1, special case just empty list and elt
+         (Mov r8 r9) ; save how many args we popped
          (Jmp condLabel)
          (Label loopLabel)
          ;; need to tag second thing in cons cell as cons cell
@@ -109,9 +121,16 @@
          (Push rax)
          ;; invoke function
          (compile-e e (cons x (reverse xs)))
+         ;; TODO: clean up heap???
          ;; pop rest of stack args off
          (Sal r8 3)
-         (Add rsp r8))))
+         (Add rsp r8)
+         (Ret)
+         (Label labelDone)
+         (Push rax)
+         (compile-e e (cons x (reverse xs)))
+         (Add rsp (* 8 (+ 1 (length xs))))
+         (Ret))))
          ;; cons from prim
 
 ;; Expr CEnv -> Asm
