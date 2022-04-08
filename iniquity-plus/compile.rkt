@@ -85,11 +85,15 @@
 (define (pop-args n e x xs)
   (let ((loopLabel (gensym 'loop))
         (condLabel (gensym 'cond))
-        (labelDone (gensym 'done)))
+        (labelEmpty (gensym 'done)))
     (seq 
      ;; KISS: just pop as many args as needed, append empty list
      (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
      (Mov r9 r8)
+     (Cmp r9 0)
+     (Je labelEmpty)
+     ; rax='()
+     (compile-value '())
      (Jmp condLabel)
      (Label loopLabel)
      (Pop rax)
@@ -98,7 +102,8 @@
      (Label condLabel)
      (Cmp r9 0)
      (Jne loopLabel)
-     (compile-value '())
+     ; No matter what, I think we want to push rax whether thats a heap ptr or '()
+     (Label labelEmpty)
      (Push rax)
      (compile-e e (cons x (reverse xs)))
      (Add rsp (* 8 (+ 1 (length xs))))
