@@ -8,6 +8,8 @@
 (define rsp 'rsp) ; stack
 (define rdi 'rdi) ; arg
 (define r8 'r8) ; scratch for arity-check
+(define r9 'r9) ; scratch for pop loop
+(define r10 'r10) ; scratch for pop loop
 
 ;; type CEnv = [Listof Variable]
 
@@ -60,13 +62,57 @@
     [(FunRest xs x e) 
      (seq (Label (symbol->label f))
           (Cmp r8 (length xs)) ; check arity
-          (Jne 'raise_error_align)
-          (compile-e e (reverse (cons x xs)))
-          (Add rsp (* 8 (+ (length xs) 1)))
+          (Jl 'raise_error_align)
+          ;; push empty list to stack
+          ;; TODO: replace with n-m 
+          ;;       args pushed to stack
+          ;(compile-e (Empty) '())
+          ;(Push rax)
+          ;; TODO: handle empty list as spec case?
+          (pop-args (length xs) e x xs)
+          ;;(compile-e e (cons x (reverse xs)))
+          ;; add 1 because empty list is now in stack
+          ;;(Add rsp (* 8 (length xs)))
           (Ret))]))
-
-
-
+;
+; rsp------------------v
+;  |  |'() |3 |  |  |3|2|1|ret
+; rbx----------^
+; rax=&rbx
+; r9=1
+; r8=2
+;
+;
+;
+(define (pop-args n e x xs)
+  (let ((loopLabel (gensym 'loop))
+        (condLabel (gensym 'cond)))
+    (seq (Mov r9 r8)
+         (Sub r9 n)
+         (Mov r8 r9) ; save how many args we popped
+         (compile-e (Empty) '()) ; rax='()
+         (Jmp condLabel)
+         (Label loopLabel)
+         ;; need to tag second thing in cons cell as cons cell
+         (Mov (Offset rbx 0) rax)
+         (Pop rax)
+         (Mov (Offset rbx 8) rax)
+         (Mov rax rbx)
+         (Or rax type-cons)
+         (Add rbx 16)
+         (Sub r9 1)
+         ;; check loop condition
+         (Label condLabel)
+         (Cmp r9 0)
+         (Jne loopLabel)
+         ;; Push rax list back onto stack
+         (Push rax)
+         ;; invoke function
+         (compile-e e (cons x (reverse xs)))
+         ;; pop rest of stack args off
+         (Sal r8 3)
+         (Add rsp r8))))
+         ;; cons from prim
 
 ;; Expr CEnv -> Asm
 (define (compile-e e c)
@@ -178,8 +224,6 @@
     (seq (Lea rax r)
          (Push rax)
          ;; push empty list to stack
-         (compile-value '()) ; put empty list in rax
-         (Push rax) ; push rax
          (compile-es es (cons #f c))
          ;; TODO: communicate argument count to called function
          ;; push empty list
@@ -229,3 +273,13 @@
          (string->list (symbol->string s))))
     "_"
     (number->string (eq-hash-code s) 16))))
+
+; (begin (require "parse.rkt" "interp.rkt" "types.rkt" a86/interp
+                ; rackunit a86/printer "ast.rkt" "heap.rkt" "heap.rkt"
+                ; "env.rkt"
+                ; "interp-prims-heap.rkt"
+                ; "ast.rkt"
+                ; "unload-bits-asm.rkt") (current-objs '("runtime.o")) (define
+                                                                       ; (run p)
+                                                                       ; (unload/free (asm-interp (compile (parse p))))))
+;(run '[(define (f y . xs) y) (f 5)])
