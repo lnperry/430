@@ -90,13 +90,18 @@
      ;; KISS: just pop as many args as needed, append empty list
      (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
      (Mov r9 r8)
+     (compile-value '())
      (Cmp r9 0)
      (Je labelEmpty)
      ; rax='()
-     (compile-value '())
      (Jmp condLabel)
      (Label loopLabel)
+     (Mov (Offset rbx 0) rax)
      (Pop rax)
+     (Mov (Offset rbx 8) rax)
+     (Mov rax rbx)
+     (Or rax type-cons)
+     (Add rbx 16)
      (Sub r9 1)
      ;check loop condition
      (Label condLabel)
@@ -106,6 +111,8 @@
      (Label labelEmpty)
      (Push rax)
      (compile-e e (cons x (reverse xs)))
+     ; always + (len xs)+1 
+     ; because after push/pop rsp always at (len xs)+(len (list '()))
      (Add rsp (* 8 (+ 1 (length xs))))
      (Ret))))
 
