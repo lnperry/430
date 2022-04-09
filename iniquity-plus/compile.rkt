@@ -277,23 +277,45 @@
         (loopLabel (gensym 'loopLabel)))
   (seq ;; need special case for when singleton empty list '()
 
+   (Add r8 3)
 
-
-   (Jmp condLabel)
-   (Label loopLabel)
    (Xor rax type-cons)
    (Mov r9 (Offset rax 8))
    (Push r9)
+
    (Mov rax (Offset rax 0))
-   (Add r8 1)
-   ;check loop condition
-   (Label condLabel)
-   (Mov r9 rax)
-   (And r9 ptr-mask)
-   (Cmp r9 type-cons)
-   (Je loopLabel)
-   (Push rax)
-   (Add r8 1)))) ; rax not cons, push it
+   (Xor rax type-cons) 
+   (Mov r9 (Offset rax 8))
+   (Push r9)
+
+   (Mov rax (Offset rax 0))
+   (Xor rax type-cons) 
+   (Mov r9 (Offset rax 8))
+   (Push r9))))
+
+   ; (Xor rax type-cons)
+   ; (Mov r9 (Offset rax 8))
+   ; (Push r9)
+
+
+   ; (Mov rax (Offset rax 0))
+   ; (Add r8 1)
+;
+;
+   ; (Jmp condLabel)
+   ; (Label loopLabel)
+   ; (Xor rax type-cons)
+   ; (Mov r9 (Offset rax 8))
+   ; (Push r9)
+   ; (Mov rax (Offset rax 0))
+   ; (Add r8 1)
+   ; (Label condLabel)
+   ; (Mov r9 rax)
+   ;(And r9 ptr-mask)
+   ; (Cmp r9 152)
+   ; (Je loopLabel)
+   ; (Push rax)
+   ; (Add r8 1)))) ; rax not cons, push it
 
        ; start by pushing car
        ;(assert-cons rax)
