@@ -272,32 +272,52 @@
           ; (Mov rax (Offset rax 0)))]
 ;
 
+
 (define (compile-e-list e c)
   (let ((condLabel (gensym 'condLabel))
         (loopLabel (gensym 'loopLabel)))
-  (seq ;; need special case for when singleton empty list '()
+   (match e 
+    [(Empty) (seq)]
+    [_       (seq ;; need special case for when singleton empty list '()
 
-   (Add r8 3)
+             (Add r8 3)
 
-   (Xor rax type-cons)
-   (Mov r9 (Offset rax 8))
-   (Push r9)
+             (Xor rax type-cons)
+             (Mov r9 (Offset rax 8))
+             (Push r9)
 
-   (Mov rax (Offset rax 0))
-   (Xor rax type-cons) 
-   (Mov r9 (Offset rax 8))
-   (Push r9)
+             (Mov rax (Offset rax 0))
+             (Xor rax type-cons) 
+             (Mov r9 (Offset rax 8))
+             (Push r9)
 
-   (Mov rax (Offset rax 0))
-   (Xor rax type-cons) 
-   (Mov r9 (Offset rax 8))
-   (Push r9))))
+             (Mov rax (Offset rax 0))
+             (Xor rax type-cons) 
+             (Mov r9 (Offset rax 8))
+             (Push r9))])))
 
+; (define (compile-e-list e c)
+  ; (let ((condLabel (gensym 'condLabel))
+        ; (loopLabel (gensym 'loopLabel)))
+  ; (seq ;; need special case for when singleton empty list '()
+;
+   ; (Add r8 3)
+;
    ; (Xor rax type-cons)
    ; (Mov r9 (Offset rax 8))
    ; (Push r9)
-
-
+;
+   ; (Mov rax (Offset rax 0))
+   ; (Xor rax type-cons)
+   ; (Mov r9 (Offset rax 8))
+   ; (Push r9)
+;
+   ; (Mov rax (Offset rax 0))
+   ; (Xor rax type-cons)
+   ; (Mov r9 (Offset rax 8))
+   ; (Push r9))))
+;
+   
    ; (Mov rax (Offset rax 0))
    ; (Add r8 1)
 ;
