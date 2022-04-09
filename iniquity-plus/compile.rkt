@@ -280,21 +280,36 @@
     [(Empty) (seq)]
     [_       (seq ;; need special case for when singleton empty list '()
 
-             (Add r8 3)
+;; code below works on this case below
+;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 (cons 4 5)))))])
+;; code fails at thrd assert cons bc no 4th cons cell
+;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 3))))])
+
+      ;; first check if next cell cons
+             (Add r8 4)
 
              (Xor rax type-cons)
              (Mov r9 (Offset rax 8))
              (Push r9)
 
              (Mov rax (Offset rax 0))
+             (assert-cons rax)
              (Xor rax type-cons) 
              (Mov r9 (Offset rax 8))
              (Push r9)
 
              (Mov rax (Offset rax 0))
+             (assert-cons rax)
              (Xor rax type-cons) 
              (Mov r9 (Offset rax 8))
-             (Push r9))])))
+             (Push r9)
+
+             (Mov rax (Offset rax 0))
+             (assert-cons rax)
+  (Push rax))
+
+    ])))
+
 
 ; (define (compile-e-list e c)
   ; (let ((condLabel (gensym 'condLabel))
