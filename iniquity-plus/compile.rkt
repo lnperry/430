@@ -87,6 +87,10 @@
         (condLabel (gensym 'cond))
         (labelEmpty (gensym 'done)))
     (seq 
+
+     ;;;;; what should apply be leaving in rax...? ;;;;;;
+     ;;;;; why is the (assert-cons rax) failing, and removing returns segafult? ;;;;;
+
      ;; KISS: just pop as many args as needed, append empty list
      (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
      (Mov r9 r8)
@@ -274,9 +278,9 @@
 
 
 (define (compile-e-list e c)
-  (let ((condLabel (gensym 'condLabel))
-        (loopLabel (gensym 'loopLabel))
-        (doneLabel (gensym 'doneLabel)))
+  (let ((condLabel (gensym 'condLabelCompileE))
+        (loopLabel (gensym 'loopLabelCompileE))
+        (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
     [(Empty) (seq)]
     [_       (seq ;; need special case for when singleton empty list '()
@@ -290,7 +294,7 @@
 ; rbx-------------------------------------------v
 ; 0 ... |5|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
 ;  v------------------------------^
-; rax : 0bx101010
+; rax : 0bx101000
 
 ; we know theres at least two things
 ; so i think jump right into loop cond
@@ -302,28 +306,34 @@
 ; push both offset 0 and offset 8 ont othe stack & r8+=2
     ;; check if (offset rax 8) is *not* type cons, jump to end
 
-  ; (Mov r9 rax)
-  ; (And r9 ptr-mask)
-  ; (Cmp r9 type-cons)
-  ; (Je doneLabel)
-  ; (Jmp condLabel)
-  ; (Label loopLabel)
-  ; (Xor rax type-cons)
-  ; (Mov r9 (Offset rax 8))
-  ; (Push r9)
-  ; (Add r8 1)
-  ; (Mov rax (Offset rax 0))
-  ; (Label condLabel)
-  ; (Mov r9 rax)
-  ; (And r9 ptr-mask)
-  ; (Cmp r9 type-cons)
-  ; (Je loopLabel)
-  ; (Label doneLabel)
+; first clear our the type cons from rax
+; NOW do everthing else i was gonna do (check if offset 0 is a ptr, etc...)
+
+  (Jmp condLabel)
+  (Label loopLabel)
+  (Xor rax type-cons)
   (Mov r9 (Offset rax 8))
   (Push r9)
-  (Mov r9 (Offset rax 0))
+  (Add r8 1)
+  (Mov rax (Offset rax 0))
+  (Label condLabel)
+  ;;; TODO: changing condition from checking if ptr to checking if empty list;;;
+  (assert-cons rax)
+  (Mov r9 rax)
+  (Xor r9 type-cons)
+  (Mov r9 (Offset r9 0))
+  (And r9 ptr-mask)
+  (Cmp r9 type-cons)
+  (Je loopLabel)
+  (Xor rax type-cons)
+  ; add a special case that if it is the empty list, dont append it?
+  (Mov r9 (Offset rax 8))
   (Push r9)
-  (Add r8 2))])))
+  ;;; TODO: think i just need to actually check if empty before i ignore it;;;
+  ;;; could do something like push it then only pop if, or dont pop at all idk
+  ;(Mov r9 (Offset rax 0))
+  ;(Push r9)
+  (Add r8 1))])))
 
 
 ;; [Listof Expr] CEnv -> Asm
