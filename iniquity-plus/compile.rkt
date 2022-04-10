@@ -275,7 +275,8 @@
 
 (define (compile-e-list e c)
   (let ((condLabel (gensym 'condLabel))
-        (loopLabel (gensym 'loopLabel)))
+        (loopLabel (gensym 'loopLabel))
+        (doneLabel (gensym 'doneLabel)))
    (match e 
     [(Empty) (seq)]
     [_       (seq ;; need special case for when singleton empty list '()
@@ -284,163 +285,45 @@
 ;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 (cons 4 5)))))])
 ;; code fails at thrd assert cons bc no 4th cons cell
 ;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 3))))])
-
-      ;; first check if next cell cons
-             (Add r8 4)
-
-             (Xor rax type-cons)
-             (Mov r9 (Offset rax 8))
-             (Push r9)
-
-             (Mov rax (Offset rax 0))
-             (assert-cons rax)
-             (Xor rax type-cons) 
-             (Mov r9 (Offset rax 8))
-             (Push r9)
-
-             (Mov rax (Offset rax 0))
-             (assert-cons rax)
-             (Xor rax type-cons) 
-             (Mov r9 (Offset rax 8))
-             (Push r9)
-
-             (Mov rax (Offset rax 0))
-             (assert-cons rax)
-  (Push rax))
-
-    ])))
-
-
-; (define (compile-e-list e c)
-  ; (let ((condLabel (gensym 'condLabel))
-        ; (loopLabel (gensym 'loopLabel)))
-  ; (seq ;; need special case for when singleton empty list '()
 ;
-   ; (Add r8 3)
-;
-   ; (Xor rax type-cons)
-   ; (Mov r9 (Offset rax 8))
-   ; (Push r9)
-;
-   ; (Mov rax (Offset rax 0))
-   ; (Xor rax type-cons)
-   ; (Mov r9 (Offset rax 8))
-   ; (Push r9)
-;
-   ; (Mov rax (Offset rax 0))
-   ; (Xor rax type-cons)
-   ; (Mov r9 (Offset rax 8))
-   ; (Push r9))))
-;
-   
-   ; (Mov rax (Offset rax 0))
-   ; (Add r8 1)
-;
-;
-   ; (Jmp condLabel)
-   ; (Label loopLabel)
-   ; (Xor rax type-cons)
-   ; (Mov r9 (Offset rax 8))
-   ; (Push r9)
-   ; (Mov rax (Offset rax 0))
-   ; (Add r8 1)
-   ; (Label condLabel)
-   ; (Mov r9 rax)
-   ;(And r9 ptr-mask)
-   ; (Cmp r9 152)
-   ; (Je loopLabel)
-   ; (Push rax)
-   ; (Add r8 1)))) ; rax not cons, push it
+; (cons 42 (cons 8 5))
+; rbx-------------------------------------------v
+; 0 ... |5|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
+;  v------------------------------^
+; rax : 0bx101010
 
-       ; start by pushing car
-       ;(assert-cons rax)
-       ; (Add r8 3)
-;
-       ; (assert-cons rax)
-       ; (Xor rax type-cons)
-       ; (Mov r9 (Offset rax 8))
-       ; (Push r9)
-       ; (Mov rax (Offset rax 0))
-;
-       ; indexing into (cons 3 4)
-       ; (assert-cons rax)
-       ; (Xor rax type-cons)
-       ; (Mov r9 (Offset rax 8))
-       ; (Push r9)
-       ; index 4?
-       ; (Mov rax (Offset rax 0))
-       ; push 4?
-       ; (Push rax))))
+; we know theres at least two things
+; so i think jump right into loop cond
+; check if thing offset 0 is type cons,
+; if it is then we want to push the second thing onto the stack & r8++
+; then put the first thing in whatever register we're using to keep track
+; at the end of recursing we'll have something that isn't type 1
+; so at the end, the thing in offset 0 not type cons
+; push both offset 0 and offset 8 ont othe stack & r8+=2
+    ;; check if (offset rax 8) is *not* type cons, jump to end
 
-
-
-
-       ;(assert-integer rax))))
-       ;(Push r9))))
-       ;(Push r9)
-       ;(Mov rax (Offset rax 0))
-       ;(Push rax))))
-       ;(assert-cons rax)
-       ;(Xor rax type-cons)
-       ;(Mov r9 (Offset r9 8))
-       ;(assert-cons r9)
-       ;(Add rax 8)
-       ;(Xor rax type-cons)
-       ;(Mov r9 (Offset rax 8))
-       ;(Mov r9 (Offset rax 0))
-       ;(Mov r9 (Offset r9 8))
-       ;(assert-integer r9)
-       ;(Push r9)
-       ;(Push r9)
-       ;(Add r8 2)
-       ;(Mov r9 (Offset rax 8))
-       ;(assert-integer r9))))
-       ;(assert-cons rax))))
-       ;(Add r8 1)
-       ;(Mov r9 (Offset rax 8)))))
-       ;(assert-cons r9)
-       ;(Xor r9 type-cons)
-       ;(Mov r9 (Offset rbx -8))
-       ;(Mov r9 rax))))
-       ; (Xor r9 type-cons)
-       ; (Mov r9 (Offset r9 8))
-        ;(assert-cons r9)
-       ;(Push r9))
-       ;(Add r8 1)))
- 
-
-;; [Listof Expr] CEnv -> Asm
-; (define (compile-e-list e c)
-  ; (let ((condLabel (gensym 'condLabel))
-        ; (loopLabel (gensym 'loopLabel)))
-  ; (seq ;; need special case for when singleton empty list '()
-;
-       ; start by pushing car
-       ;(assert-cons rax)
-       ; (Mov r9 rax)
-       ; (assert-cons r9)
-       ; (Xor r9 type-cons)
-       ; (Mov r9 (Offset r9 8))
-       ; (Push r9)
-       ; (Add r8 1))))
-       ; now start looping
-       ;;(Jmp condLabel) 
-       ;;(Label loopLabel)
-       ;;(Add rax 8)
-       ;; asserts replaced with empty? or cons? because (cons? '()) = #f
-       ;;(assert-cons rax)
-       ;;(Mov r9 rax)
-       ; (Xor r9 type-cons)
-       ; (Mov r9 (Offset r9 8))
-       ; (Push r9)
-       ; (Push rax)
-       ; (Add r8 1) ; increment num args pushed to stack for arity check
-       ;check loop condition
-       ; (Label condLabel)
-       ; is second arg empy list? then we're done
-       ; (Mov r9 (Offset rax 0))
-       ; (Cmp r9 (imm->bits '()))
-       ; (Jne loopLabel))))
+  ; (Mov r9 rax)
+  ; (And r9 ptr-mask)
+  ; (Cmp r9 type-cons)
+  ; (Je doneLabel)
+  ; (Jmp condLabel)
+  ; (Label loopLabel)
+  ; (Xor rax type-cons)
+  ; (Mov r9 (Offset rax 8))
+  ; (Push r9)
+  ; (Add r8 1)
+  ; (Mov rax (Offset rax 0))
+  ; (Label condLabel)
+  ; (Mov r9 rax)
+  ; (And r9 ptr-mask)
+  ; (Cmp r9 type-cons)
+  ; (Je loopLabel)
+  ; (Label doneLabel)
+  (Mov r9 (Offset rax 8))
+  (Push r9)
+  (Mov r9 (Offset rax 0))
+  (Push r9)
+  (Add r8 2))])))
 
 
 ;; [Listof Expr] CEnv -> Asm
