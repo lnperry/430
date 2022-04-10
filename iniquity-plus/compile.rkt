@@ -88,10 +88,7 @@
         (labelEmpty (gensym 'done)))
     (seq 
 
-     ;;;;; what should apply be leaving in rax...? ;;;;;;
-     ;;;;; why is the (assert-cons rax) failing, and removing returns segafult? ;;;;;
-
-     ;; KISS: just pop as many args as needed, append empty list
+          ;; KISS: just pop as many args as needed, append empty list
      (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
      (Mov r9 r8)
      (compile-value '())
@@ -309,6 +306,14 @@
 ; first clear our the type cons from rax
 ; NOW do everthing else i was gonna do (check if offset 0 is a ptr, etc...)
 
+;;;;; what should apply be leaving in rax...? ;;;;;;
+     ;;;;; why is the (assert-cons rax) failing, and removing returns segafult? ;;;;;
+  
+  (Mov r9 rax)
+  (compile-value '())
+  (Cmp r9 rax)
+  (Mov rax r9)
+  (Je emptyLabel)
   (Jmp condLabel)
   (Label loopLabel)
   (Xor rax type-cons)
@@ -333,7 +338,8 @@
   ;;; could do something like push it then only pop if, or dont pop at all idk
   ;(Mov r9 (Offset rax 0))
   ;(Push r9)
-  (Add r8 1))])))
+  (Add r8 1)
+  (Label emptyLabel))])))
 
 
 ;; [Listof Expr] CEnv -> Asm
