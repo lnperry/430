@@ -19,13 +19,13 @@ runtime.o: $(objs)
 	ld -r $(objs) -o runtime.o
 
 %.run: %.o runtime.o
-	gcc runtime.o $< -o $@
+	gcc -g runtime.o $< -o $@
 
 .c.o:
 	gcc -fPIC -c -g -o $@ $<
 
 .s.o:
-	nasm -g -f $(format) -o $@ $<
+	nasm -F dwarf -g -f $(format) -o $@ $<
 
 %.s: %.rkt
 	racket -t compile-file.rkt -m $< > $@

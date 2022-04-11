@@ -9,6 +9,7 @@
 (define rdi 'rdi) ; arg
 (define r8 'r8) ; scratch for arity-check
 (define r9 'r9)
+(define r10 'r10)
 ;; type CEnv = [Listof Variable]
 
 ;; Prog -> Asm
@@ -83,9 +84,9 @@
 ; when xs=(list x ...) you want to return (cons 5 (cons 6 '()))
 
 (define (pop-args n e x xs)
-  (let ((loopLabel (gensym 'loop))
-        (condLabel (gensym 'cond))
-        (labelEmpty (gensym 'done)))
+  (let ((loopLabel (gensym 'loopPop))
+        (condLabel (gensym 'condPop))
+        (labelEmpty (gensym 'donePop)))
     (seq 
 
           ;; KISS: just pop as many args as needed, append empty list
@@ -238,9 +239,9 @@
          ; need to update r8 w length of all args together
          (% "Moving length of es into r8")
          (Mov r8 (length es))
-         (compile-es es (cons #f c))
+         (compile-es es c)
          ;;(% "Start of compile-e")
-         (compile-e e (cons #f c)) ; leaves cons ptr in rax
+         (compile-e e c) ; leaves cons ptr in rax
          (% "Start of compile-e-list")
          (compile-e-list e c)
          (Jmp (symbol->label f))
@@ -308,6 +309,9 @@
 
 ;;;;; what should apply be leaving in rax...? ;;;;;;
      ;;;;; why is the (assert-cons rax) failing, and removing returns segafult? ;;;;;
+     
+
+     ;; can/should I rewrite this with car and cadr?
   
   (Mov r9 rax)
   (compile-value '())

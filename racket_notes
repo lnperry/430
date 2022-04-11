@@ -51,3 +51,11 @@ rackunit a86/printer "ast.rkt" "heap.rkt" "heap.rkt"
                    "unload-bits-asm.rkt") (current-objs '("runtime.o")) (define
 (run p)
           (unload/free (asm-interp (compile (parse p))))))
+
+to debug assembly:
+make clean
+make example.run (this requires an example.rkt file)
+gdb example.run
+break entry
+stepi to step by source line instruction
+(i think i modified the makefile a bit, not sure if i was suing mine or their makefile so i put a copy in this dir)
