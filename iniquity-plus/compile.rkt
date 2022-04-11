@@ -237,8 +237,8 @@
     (seq (Lea rax r)
          (Push rax)
          ; need to update r8 w length of all args together
-         (% "Moving length of es into r8")
          (Mov r8 (length es))
+         (% "Moving length of es into r8")
          (compile-es es c)
          ;;(% "Start of compile-e")
          (compile-e e c) ; leaves cons ptr in rax
