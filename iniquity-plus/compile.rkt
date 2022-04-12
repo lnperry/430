@@ -256,10 +256,12 @@
         (loopLabel (gensym 'loopLabelCompileE))
         (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
-    [(Empty) (seq)];; need special case for empty list '()
+    [(Empty) (seq
+      (compile-value '()))];; need special case for empty list '()
     [_       
       (seq 
         ;; we know if not empty list will always be at least 2 things to push to stack (cons x y) or nested
+        ; use empty list as the base case
         (Mov r9 rax)
         (compile-value '())
         (Cmp r9 rax)
