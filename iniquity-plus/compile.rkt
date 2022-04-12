@@ -239,111 +239,52 @@
          ; need to update r8 w length of all args together
          (Mov r8 (length es))
          (% "Moving length of es into r8")
-         (compile-es es c)
-         ;;(% "Start of compile-e")
-         (compile-e e c) ; leaves cons ptr in rax
+         (compile-es es (cons #f c))
+         ; (% "Start of compile-e")
+         ; (cons 1 (cons 2 '()))
+         ; need to update compil-e to use the environment
+         ; (make-list (legnth es) #f
+         ; (cons #f (cons #f ...)
+         (compile-e e (append (make-list (length es) #f) c)) ; leaves cons ptr in rax
          (% "Start of compile-e-list")
          (compile-e-list e c)
          (Jmp (symbol->label f))
          (Label r))))
-;
-; rsp-------------------------------------------v
-;  |  |  '()   |  60  |  | | | | | |    | 60  | 5  |ret1094
-; rbx-------------------^
-; rax=-----^
-; r9=60
-; r9=0
-; r8=1
-
-
-; ['cons
-     ; (seq (Mov (Offset rbx 0) rax)
-          ; (Pop rax)
-          ; (Mov (Offset rbx 8) rax)
-          ; (Mov rax rbx)
-          ; (Or rax type-cons)
-          ; (Add rbx 16))]
-;
-; ['car
-     ; (seq (assert-cons rax)
-          ; (Xor rax type-cons)
-          ; (Mov rax (Offset rax 8)))]
-    ; ['cdr
-     ; (seq (assert-cons rax)
-          ; (Xor rax type-cons)
-          ; (Mov rax (Offset rax 0)))]
-;
-
 
 (define (compile-e-list e c)
   (let ((condLabel (gensym 'condLabelCompileE))
         (loopLabel (gensym 'loopLabelCompileE))
         (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
-    [(Empty) (seq)]
-    [_       (seq ;; need special case for when singleton empty list '()
-
-;; code below works on this case below
-;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 (cons 4 5)))))])
-;; code fails at thrd assert cons bc no 4th cons cell
-;(run '[(define (f . xs) xs) (apply f (cons 1 (cons 2 (cons 3 3))))])
-;
-; (cons 42 (cons 8 5))
-; rbx-------------------------------------------v
-; 0 ... |5|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
-;  v------------------------------^
-; rax : 0bx101000
-
-; we know theres at least two things
-; so i think jump right into loop cond
-; check if thing offset 0 is type cons,
-; if it is then we want to push the second thing onto the stack & r8++
-; then put the first thing in whatever register we're using to keep track
-; at the end of recursing we'll have something that isn't type 1
-; so at the end, the thing in offset 0 not type cons
-; push both offset 0 and offset 8 ont othe stack & r8+=2
-    ;; check if (offset rax 8) is *not* type cons, jump to end
-
-; first clear our the type cons from rax
-; NOW do everthing else i was gonna do (check if offset 0 is a ptr, etc...)
-
-;;;;; what should apply be leaving in rax...? ;;;;;;
-     ;;;;; why is the (assert-cons rax) failing, and removing returns segafult? ;;;;;
-     
-
-     ;; can/should I rewrite this with car and cadr?
-  
-  (Mov r9 rax)
-  (compile-value '())
-  (Cmp r9 rax)
-  (Mov rax r9)
-  (Je emptyLabel)
-  (Jmp condLabel)
-  (Label loopLabel)
-  (Xor rax type-cons)
-  (Mov r9 (Offset rax 8))
-  (Push r9)
-  (Add r8 1)
-  (Mov rax (Offset rax 0))
-  (Label condLabel)
-  ;;; TODO: changing condition from checking if ptr to checking if empty list;;;
-  (assert-cons rax)
-  (Mov r9 rax)
-  (Xor r9 type-cons)
-  (Mov r9 (Offset r9 0))
-  (And r9 ptr-mask)
-  (Cmp r9 type-cons)
-  (Je loopLabel)
-  (Xor rax type-cons)
-  ; add a special case that if it is the empty list, dont append it?
-  (Mov r9 (Offset rax 8))
-  (Push r9)
-  ;;; TODO: think i just need to actually check if empty before i ignore it;;;
-  ;;; could do something like push it then only pop if, or dont pop at all idk
-  ;(Mov r9 (Offset rax 0))
-  ;(Push r9)
-  (Add r8 1)
-  (Label emptyLabel))])))
+    [(Empty) (seq)];; need special case for empty list '()
+    [_       
+      (seq 
+        ;; we know if not empty list will always be at least 2 things to push to stack (cons x y) or nested
+        (Mov r9 rax)
+        (compile-value '())
+        (Cmp r9 rax)
+        (Mov rax r9)
+        (Je emptyLabel)
+        (Jmp condLabel)
+        (Label loopLabel)
+        (Xor rax type-cons)
+        (Mov r9 (Offset rax 8))
+        (Push r9)
+        (Add r8 1)
+        (Mov rax (Offset rax 0))
+        (Label condLabel)
+        (assert-cons rax)
+        (Mov r9 rax)
+        (Xor r9 type-cons)
+        (Mov r9 (Offset r9 0))
+        (And r9 ptr-mask)
+        (Cmp r9 type-cons)
+        (Je loopLabel)
+        (Xor rax type-cons)
+        (Mov r9 (Offset rax 8))
+        (Push r9)
+        (Add r8 1)
+        (Label emptyLabel))])))
 
 
 ;; [Listof Expr] CEnv -> Asm
