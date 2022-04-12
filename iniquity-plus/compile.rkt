@@ -257,6 +257,7 @@
         (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
     [(Empty) (seq
+      ; should this be done at runtime?
       (compile-value '()))];; need special case for empty list '()
     [_       
       (seq 
