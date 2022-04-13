@@ -254,11 +254,7 @@
          (Mov r8 (length es))
          (% "Moving length of es into r8")
          (compile-es es (cons #f c))
-         ; (% "Start of compile-e")
-         ; (cons 1 (cons 2 '()))
-         ; need to update compil-e to use the environment
-         ; (make-list (legnth es) #f
-         ; (cons #f (cons #f ...)
+         ; need to update compil-e to use the same CEnv as compile-es?
          (compile-e e (append (make-list (length es) #f) c)) ; leaves cons ptr in rax
          (% "Start of compile-e-list")
          (compile-e-list e c)
@@ -270,7 +266,7 @@
         (loopLabel (gensym 'loopLabelCompileE))
         (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
-      ; should this be done at runtime?]
+      ; should this be done at runtime?
       ; need special case for empty list '() ?
     [(Empty) (seq)]
     [_       
@@ -280,7 +276,6 @@
         ; 0 ... |'()|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
         ;  v-----------------------------------------^
         ; rax : 0bx101000
-
         (Jmp condLabel)
         (Label loopLabel)
         (Xor rax type-cons)
@@ -300,10 +295,7 @@
         (Xor r9 type-cons)
         (Mov r9 (Offset r9 8))
         (Push r9)
-        ; (Mov r9 rax)
-        ; (Xor r9 type-cons)
-        ; (Mov r9 (Offset r9 0))
-        ; (Push r9)
+        ; only push once, and ignore '() in (Offset rax 0)
         (Add r8 1)
         (Label emptyLabel))])))
 
