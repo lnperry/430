@@ -71,18 +71,30 @@
           ))]
     [(FunCase cs)
      ; top level is label for function
-     (Label (symbol->label f))
+     (seq
+       (Label (symbol->label f))
      ; inside here, multiple labels for each function num
      ; before
-     (compile-fun-case f cs 0)]))
+       (compile-fun-case f cs 0))]))
 
 (define (compile-fun-case f cs i)
     (match cs
      ['() '()]
-     [(cons x xs) 
-      (seq 
-       (compile-fun (string->symbol (string-append (~v f) (~v i))) x)
-       (compile-fun-case f xs (add1 i)))]))
+     [(cons x xs)
+      (match x
+      [(FunPlain fun-xs fun-e) 
+      (let ((labelNext (gensym 'next))) 
+       (seq
+        ; if r8 equal to (length fun-xs)
+        (Cmp r8 (length fun-xs))
+        (Jne labelNext)
+        ; execute function
+        ; otherwise, jump to end
+        (compile-fun (gensym f) x)
+        (Label labelNext)
+        (compile-fun-case f xs 0)))]
+      [(FunRest xs x e) '()])]))
+      
 ;
 ; rsp------------v
 ;  |  | | |  |  |'()|1|ret
