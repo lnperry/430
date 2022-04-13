@@ -296,7 +296,11 @@
         ; (run '[(define (append . xss) xss)    (let ((x '())) (apply append (cons 1 '()) x))])
         ; this breaks. why? this works in racket
         ; need to follow along in Dr. Racket and build out the stack frame as I walk thru debugger
-        
+        ; Jose's intuition was I needed to add 1 to my (length es) to account for the label i pushed 
+        ; can examine stack in gdb with x/4 $rsp => this shows the top 4 elements of the stack
+        ; im seeing some weird artifacts i dont recognize in my stack, where are they coming from?
+        ; why is it happening? should probably go line by line in gdb and figure out whats happpening
+        ; in my stack
         (Cmp rax 152)
         (Je emptyLabel)
         (Jmp condLabel)
