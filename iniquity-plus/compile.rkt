@@ -65,57 +65,44 @@
           (Cmp r8 (length xs))   
           (Jl 'raise_error_align) ; check arity
           (pop-args (length xs) e x xs)
-         ; (compile-e e (cons x (reverse xs)))
-          ;; add 1 because empty list is now in stack
-         ; (Add rsp (* 8 (+ 1 (length xs))))
           ))]
     [(FunCase cs)
-     ; top level is label for function
      (seq
+     ; top level is label for function
        (Label (symbol->label f))
-     ; inside here, multiple labels for each function num
-     ; before
-       (compile-fun-case f cs 0))]))
+     ; inside here, multiple labels for each function 
+       (compile-fun-case f cs))]))
 
-(define (compile-fun-case f cs i)
+(define (compile-fun-case f cs)
+  (let ((labelNext (gensym 'next))) 
     (match cs
      ['() '()]
      [(cons x xs)
       (match x
       [(FunPlain fun-xs fun-e) 
-      (let ((labelNext (gensym 'next))) 
        (seq
         ; if r8 equal to (length fun-xs)
         (Cmp r8 (length fun-xs))
         (Jne labelNext)
-        ; execute function
-        ; otherwise, jump to end
         (compile-fun (gensym f) x)
         (Label labelNext)
-        (compile-fun-case f xs 0)))]
-      [(FunRest xs x e) '()])]))
+        (compile-fun-case f xs))]
+      [(FunRest rest-xs rest-x e) 
+       (seq
+         ;if r8 is less (length xs), cont
+         (Cmp r8 (length rest-xs))
+         (Jl labelNext)
+         (compile-fun (gensym f) x)
+         (Label labelNext)
+         (compile-fun-case f xs))])])))
       
-;
-; rsp------------v
-;  |  | | |  |  |'()|1|ret
-; rbx-------^
-; rax=&rbx
-; r9=0
-; r8=0
-
-
-; either xs='(), xs=(list x) or xs = (list x ...)
-; when xs='(), you want to return '()
-; when xs=(list x) you want to return (cons 5 '())
-; when xs=(list x ...) you want to return (cons 5 (cons 6 '()))
-
 (define (pop-args n e x xs)
   (let ((loopLabel (gensym 'loopPop))
         (condLabel (gensym 'condPop))
         (labelEmpty (gensym 'donePop)))
     (seq 
 
-          ;; KISS: just pop as many args as needed, append empty list
+     ;; just pop as many args as needed, append empty list
      (Sub r8 (length xs)) ; keep r8 so we know how much of rsp to pop
      (Mov r9 r8)
      (compile-value '())
@@ -283,25 +270,17 @@
         (loopLabel (gensym 'loopLabelCompileE))
         (emptyLabel (gensym 'emptyLabelCompileE)))
    (match e 
-    [(Empty) (seq
-      ; should this be done at runtime?
-      (compile-value '()))];; need special case for empty list '()
+      ; should this be done at runtime?]
+      ; need special case for empty list '() ?
+    [(Empty) (seq)]
     [_       
       (seq 
-      ; (cons 42 (cons 8 5))
-      ; rbx-------------------------------------------v
-      ; 0 ... |5|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
-      ;  v------------------------------^
-      ; rax : 0bx101000
+        ; (cons 1 (cons 2 (cons 3 (cons 4 '()))))
+        ; rbx-------------------------------------------v
+        ; 0 ... |'()|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
+        ;  v-----------------------------------------^
+        ; rax : 0bx101000
 
-
-        ;; we know if not empty list will always be at least 2 things to push to stack (cons x y) or nested
-        ; use empty list as the base case
-        (Mov r9 rax)
-        (compile-value '())
-        (Cmp r9 rax)
-        (Mov rax r9)
-        (Je emptyLabel)
         (Jmp condLabel)
         (Label loopLabel)
         (Xor rax type-cons)
@@ -310,16 +289,21 @@
         (Add r8 1)
         (Mov rax (Offset rax 0))
         (Label condLabel)
-        (assert-cons rax)
         (Mov r9 rax)
         (Xor r9 type-cons)
         (Mov r9 (Offset r9 0))
-        (And r9 ptr-mask)
-        (Cmp r9 type-cons)
-        (Je loopLabel)
-        (Xor rax type-cons)
-        (Mov r9 (Offset rax 8))
+        ; TODO: compare rax to '() not 152, but okay while prototyping
+        (Cmp r9 152)
+        (Jne loopLabel)
+        ; (Offset rax 0) == '(), push both 
+        (Mov r9 rax)
+        (Xor r9 type-cons)
+        (Mov r9 (Offset r9 8))
         (Push r9)
+        ; (Mov r9 rax)
+        ; (Xor r9 type-cons)
+        ; (Mov r9 (Offset r9 0))
+        ; (Push r9)
         (Add r8 1)
         (Label emptyLabel))])))
 
