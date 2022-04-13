@@ -68,7 +68,21 @@
          ; (compile-e e (cons x (reverse xs)))
           ;; add 1 because empty list is now in stack
          ; (Add rsp (* 8 (+ 1 (length xs))))
-          ))]))
+          ))]
+    [(FunCase cs)
+     ; top level is label for function
+     (Label (symbol->label f))
+     ; inside here, multiple labels for each function num
+     ; before
+     (compile-fun-case f cs 0)]))
+
+(define (compile-fun-case f cs i)
+    (match cs
+     ['() '()]
+     [(cons x xs) 
+      (seq 
+       (compile-fun (string->symbol (string-append (~v f) (~v i))) x)
+       (compile-fun-case f xs (add1 i)))]))
 ;
 ; rsp------------v
 ;  |  | | |  |  |'()|1|ret
@@ -237,6 +251,7 @@
     (seq (Lea rax r)
          (Push rax)
          ; need to update r8 w length of all args together
+         ;;; TODO: is r8 messing up in nested calls? is it getting clobbered?
          (Mov r8 (length es))
          (% "Moving length of es into r8")
          (compile-es es (cons #f c))
@@ -261,6 +276,13 @@
       (compile-value '()))];; need special case for empty list '()
     [_       
       (seq 
+      ; (cons 42 (cons 8 5))
+      ; rbx-------------------------------------------v
+      ; 0 ... |5|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
+      ;  v------------------------------^
+      ; rax : 0bx101000
+
+
         ;; we know if not empty list will always be at least 2 things to push to stack (cons x y) or nested
         ; use empty list as the base case
         (Mov r9 rax)
