@@ -249,13 +249,28 @@
   (let ((r (gensym 'ret)))
     (seq (Lea rax r)
          (Push rax)
+         ; rsp ----------v
+         ; 0 ... | | | | |Label| ... MAX_RAM
+         ; rax = Label
          ; need to update r8 w length of all args together
          ;;; TODO: is r8 messing up in nested calls? is it getting clobbered?
          (Mov r8 (length es))
+         ; stack diagram
+
          (% "Moving length of es into r8")
          (compile-es es (cons #f c))
-         ; need to update compil-e to use the same CEnv as compile-es?
+         ; stack diagram
+         ; (define (f x) x) (apply f (cons 1 '()) (cons 1 (cons 2 '())))
+         ; rsp --------v
+         ; 0 ... | | | |(cons 1 '())|Label| ... MAX_RAM
+         ; rax = Label
+         (%% "Compile e starting")
          (compile-e e (append (make-list (length es) #f) c)) ; leaves cons ptr in rax
+         (%%% "Compile e done")
+         ; what gets left in rax after this is run?
+         ; does x evaluate to (cons 1 '()) or not?
+         ; (run '[(define (append . xss) xss)   (let ((x (cons 1 '()))) (apply append 2 x))])
+         ; it is pushing a ptr into rax? why? should maybe step thru w dr racket and see why
          (% "Start of compile-e-list")
          (compile-e-list e c)
          (Jmp (symbol->label f))
@@ -272,10 +287,18 @@
     [_       
       (seq 
         ; (cons 1 (cons 2 (cons 3 (cons 4 '()))))
+        ; '() -> do no
         ; rbx-------------------------------------------v
         ; 0 ... |'()|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
-        ;  v-----------------------------------------^
-        ; rax : 0bx101000
+        ;  v--------------------------------^
+        ; rax : 0bx100010
+        ;
+        ; (run '[(define (append . xss) xss)    (let ((x '())) (apply append (cons 1 '()) x))])
+        ; this breaks. why? this works in racket
+        ; need to follow along in Dr. Racket and build out the stack frame as I walk thru debugger
+        
+        (Cmp rax 152)
+        (Je emptyLabel)
         (Jmp condLabel)
         (Label loopLabel)
         (Xor rax type-cons)
