@@ -125,7 +125,7 @@
      (Label labelEmpty)
      (Push rax)
      (compile-e e (cons x (reverse xs)))
-     ; always + (len xs)+1 
+     ; always (+ (len xs)+1)
      ; because after push/pop rsp always at (+ (len xs) (len (list x)))
      (Add rsp (* 8 (+ 1 (length xs))))
      (Ret))))
@@ -251,42 +251,21 @@
     (seq (%%% "Start compile-appply")
      (Lea rax r)
          (Push rax)
-         ; rsp ----------v
-         ; 0 ... | | | | |Label| ... MAX_RAM
-         ; rax = Label
-         ; need to update r8 w length of all args together
-         ;;; TODO: is r8 messing up in nested calls? is it getting clobbered?
          (Mov r8 (length es))
-         ; stack diagram
-
          (% "Moving length of es into r8")
          (compile-es es (cons #f c))
-         ; stack diagram
-         ; (define (f x) x) (apply f (cons 1 '()) (cons 1 (cons 2 '())))
-         ; rsp --------v
-         ; 0 ... | | | |(cons 1 '())|Label| ... MAX_RAM
-         ; rax = Label
          (%% "Compile e starting")
          (compile-e e (append (make-list (+ (length es) 1) #f) c)) ; leaves cons ptr in rax
          (%%% "Compile e done")
-         ; what gets left in rax after this is run?
-         ; does x evaluate to (cons 1 '()) or not?
-         ; (run '[(define (append . xss) xss)   (let ((x (cons 1 '()))) (apply append 2 x))])
-         ; it is pushing a ptr into rax? why? should maybe step thru w dr racket and see why
          (% "Start of compile-e-list")
-         (compile-e-list e c)
+         (compile-e-list)
          (Jmp (symbol->label f))
          (Label r))))
 
-(define (compile-e-list e c)
+(define (compile-e-list)
   (let ((condLabel (gensym 'condLabelCompileE))
         (loopLabel (gensym 'loopLabelCompileE))
-        (emptyLabel (gensym 'emptyLabelCompileE)))
-   (match e 
-      ; should this be done at runtime?
-      ; need special case for empty list '() ?
-    [(Empty) (seq)]
-    [_       
+        (emptyLabel (gensym 'emptyLabelCompileE))) 
       (seq 
         ; (cons 1 (cons 2 (cons 3 (cons 4 '()))))
         ; '() -> do no
@@ -294,16 +273,10 @@
         ; 0 ... |'()|4|0bx10010|3|0bx11010|2|0bx100010|1| ... MAX_RAM
         ;  v--------------------------------^
         ; rax : 0bx100010
-        ;
-        ; (run '[(define (append . xss) xss)    (let ((x '())) (apply append (cons 1 '()) x))])
-        ; this breaks. why? this works in racket
-        ; need to follow along in Dr. Racket and build out the stack frame as I walk thru debugger
-        ; Jose's intuition was I needed to add 1 to my (length es) to account for the label i pushed 
-        ; can examine stack in gdb with x/4 $rsp => this shows the top 4 elements of the stack
-        ; im seeing some weird artifacts i dont recognize in my stack, where are they coming from?
-        ; why is it happening? should probably go line by line in gdb and figure out whats happpening
-        ; in my stack
-        (Cmp rax 152)
+        (Mov r9 rax)
+        (compile-value '())
+        (Cmp r9 rax)
+        (Mov rax r9)
         (Je emptyLabel)
         (Jmp condLabel)
         (Label loopLabel)
@@ -316,17 +289,18 @@
         (Mov r9 rax)
         (Xor r9 type-cons)
         (Mov r9 (Offset r9 0))
-        ; TODO: compare rax to '() not 152, but okay while prototyping
-        (Cmp r9 152)
+        (Mov r10 rax)
+        (compile-value '())
+        (Cmp r9 rax)
+        (Mov rax r10) 
         (Jne loopLabel)
-        ; (Offset rax 0) == '(), push both 
+        ; only push once, and ignore '() in (Offset rax 0)
         (Mov r9 rax)
         (Xor r9 type-cons)
         (Mov r9 (Offset r9 8))
         (Push r9)
-        ; only push once, and ignore '() in (Offset rax 0)
         (Add r8 1)
-        (Label emptyLabel))])))
+        (Label emptyLabel))))
 
 
 ;; [Listof Expr] CEnv -> Asm
