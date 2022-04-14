@@ -226,7 +226,8 @@
 
 ;; Id Expr Expr CEnv -> Asm
 (define (compile-let x e1 e2 c)
-  (seq (compile-e e1 c)
+  (seq (%%% "Start compile-let")
+   (compile-e e1 c)
        (Push rax)
        (compile-e e2 (cons x c))
        (Add rsp 8)))
@@ -247,7 +248,8 @@
 ;; Id [Listof Expr] Expr CEnv -> Asm
 (define (compile-apply f es e c)
   (let ((r (gensym 'ret)))
-    (seq (Lea rax r)
+    (seq (%%% "Start compile-appply")
+     (Lea rax r)
          (Push rax)
          ; rsp ----------v
          ; 0 ... | | | | |Label| ... MAX_RAM
@@ -265,7 +267,7 @@
          ; 0 ... | | | |(cons 1 '())|Label| ... MAX_RAM
          ; rax = Label
          (%% "Compile e starting")
-         (compile-e e (append (make-list (length es) #f) c)) ; leaves cons ptr in rax
+         (compile-e e (append (make-list (+ (length es) 1) #f) c)) ; leaves cons ptr in rax
          (%%% "Compile e done")
          ; what gets left in rax after this is run?
          ; does x evaluate to (cons 1 '()) or not?
