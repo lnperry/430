@@ -80,11 +80,11 @@
     [(Prim0 'read-byte) '()]
     [(Prim0 'peek-byte) '()]
     [(Prim1 p e)
-      (append (get-strs e strs) strs)]
+      (append strs (get-strs e strs))]
     [(Prim2 p e1 e2)
-      (append (get-strs e1 strs) (get-strs e2 strs) strs)]
+      (append strs (get-strs e1 strs) (get-strs e2 strs))]
     [(Prim3 p e1 e2 e3)
-      (append strs (get-strs e1 strs) (get-strs e2 strs) (get-strs e3 strs))]
+      (append (get-strs e1 strs) (get-strs e2 strs) (get-strs e3 strs))]
     [(If p e1 e2)
       (append strs (get-strs e1 strs) (get-strs e2 strs))]
     [(Begin e1 e2)

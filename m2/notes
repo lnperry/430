@@ -1,0 +1,4 @@
+what happens if we use an empty string in q2? 
+should i rewrite it to use gensym so there's no collisions?
+like what happens if another variable has same thing as string?
+like "foo"->foo but what if there's a variable foo->7? is it "foo" or 7?

@@ -7,6 +7,8 @@
  ; e)
   (nest-lets (replace-strs e) (get-literals e)))
 
+  ; how do i test scoping?
+
 ;; Expr -> Answer
 (define (translate-literals e)
   (nest-lets (replace-strs e) (get-literals e)))
