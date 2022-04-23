@@ -1,0 +1,1 @@
+("7.9" racket ("cfed1aad5bb8c80bc3f4208737d2f45b85ad86fd" . "19b373fb4122f423fda29c75e7b17e200cdff053") #"/home/inky/school/430/m2/2/hoax/ast.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (indirect collects #"racket" #"match" #"gen-match.rkt") (indirect collects #"racket" #"match" #"parse.rkt"))
