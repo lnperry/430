@@ -1,0 +1,1 @@
+("8.2" ta6le ("78893d104a150f6afa4e5f10ff4289d087db9033" . "ec7d0ab3faa428799874eb8c5a49a2fe9339b0e0") (collects #"loot" #"ast.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (indirect collects #"racket" #"match" #"gen-match.rkt") (indirect collects #"racket" #"match" #"parse.rkt"))
