@@ -26,7 +26,7 @@
 (define (optimize p)
   (match p
     [(Prog ds e)
-     (Prog ds (optimize-source e))]))
+     (Prog (optimize-ds ds) (optimize-source e))]))
 
 ;; Expr Env Defns -> Answer
 (define (optimize-source e)
@@ -42,15 +42,30 @@
     [(Prim0 'read-byte) (Prim0 'read-byte)]
     [(Prim0 'peek-byte) (Prim0 'peek-byte)]
     [(Prim1 p e) (optimize-prim1 p (optimize-source e))]
-    [(Prim2 p e1 e2) (Prim2 p (optimize-source e1) (optimize-source e2))]
+    [(Prim2 p e1 e2) (optimize-prim2 p (optimize-source e1) (optimize-source e2))]
     [(Prim3 p e1 e2 e3) (Prim3 p (optimize-source e1) (optimize-source e2) (optimize-source e2))]
-    [(If p e1 e2) (If p (optimize-source e1) (optimize-source e2))]
+    ; optimize p, if its a literal (int, bool, char) just interp.
+    ; or really even only if its just a bool, could go one way or the other
+    [(If p e1 e2) (optimize-if (optimize-source p) (optimize-source e1) (optimize-source e2))]
     [(Begin e1 e2) (Begin (optimize-source e1) (optimize-source e2))]
     [(Let x e1 e2) (Let x (optimize-source e1) (optimize-source e2))]
     [(Lam i xs e) (Lam i xs (optimize-source e))]
     [(App e es) (App (optimize-source e) (optimize-app-args es))]
     [(Match e ps es) (Match (optimize-source e) (optimize-source ps) (optimize-source es))]))
 
+(define (optimize-ds ds)
+  (match ds
+   ['() '()]
+   [(cons x xs) 
+    (match x
+     [(Defn v a e) (cons (Defn v a (optimize-source e)) (optimize-ds xs))])]))
+
+(define (optimize-if p e1 e2)
+  (match p
+   [(Bool (? boolean? v1)) (if v1 e1 e2)]
+   [(Int  (? integer? v1)) (if v1 e1 e2)]
+   [(Char (? char? v1))    (if v1 e1 e2)]
+   [_ (If p e1 e2)]))
 ;; Value [Listof Pat] [Listof Expr] Env Defns -> Answer
 (define (interp-match v ps es r ds)
   (match* (ps es)

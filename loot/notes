@@ -9,4 +9,17 @@ even if it isn't, there is always the trade off of a faster compile/interp time 
 
 like we can shave off 3 seconds every time we ran, if we pay 1 second up front to optimize the AST
 
+follow along with Jose's example, and just call (optomize-source e) before i call compile or interp
 
+i still need to check if match works, and why are function defintions not optimizing?
+
+care must be taken when doing things like add1 to ensure it actually is indeed an integer
+even though our parser wont produce (Int #\a) we still want to do some AST validation,
+because if we don't then if someone hands us an AST thats invalid, we will crash
+instead of handing them back an invalid AST, i think this is more a design choice than requiremnt
+
+can setup some python or C scaffolding to run a loop test
+can also compare # of assembly instructions outputted
+
+we need to do some checking for some contracts like zero? that only takes int
+other huh checks take any val, but we only are optimizing for static literals
