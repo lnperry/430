@@ -23,3 +23,5 @@ can also compare # of assembly instructions outputted
 
 we need to do some checking for some contracts like zero? that only takes int
 other huh checks take any val, but we only are optimizing for static literals
+
+(optimize (parse '[(define (f x y) (let ((y (add1 (add1 1)))) (cons x y))) (define (g y) (if (if (integer->char (add1 97)) 1 2) 0 1)) (f (let ((x (box? (add1 7)))) (char? #\a)) ((lambda (x y) (< -100 (- 1 (+ (add1 10) 11)))) (match (char? #f) [#t (= 24 (if (char? "zero") 12 24))] [#f "false"]) (char->integer #\b)))]))
