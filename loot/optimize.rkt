@@ -41,14 +41,14 @@
     [(Prim0 'void) (Prim0 'void)]
     [(Prim0 'read-byte) (Prim0 'read-byte)]
     [(Prim0 'peek-byte) (Prim0 'peek-byte)]
-    [(Prim1 p e) (Prim1 p (optimize-prim1 e))]
+    [(Prim1 p e) (optimize-prim1 p e)]
     [(Prim2 p e1 e2) (Prim2 p (optimize-source e1) (optimize-source e2))]
     [(Prim3 p e1 e2 e3) (Prim3 p (optimize-source e1) (optimize-source e2) (optimize-source e2))]
     [(If p e1 e2) (If p (optimize-source e1) (optimize-source e2))]
     [(Begin e1 e2) (Begin (optimize-source e1) (optimize-source e2))]
     [(Let x e1 e2) (Let (optimize-source e1) (optimize-source e2))]
     [(Lam i xs e) (Lam i xs (optimize-source e))]
-    [(App e es) (App e es)]
+    [(App e es) (App (optimize-source e) (optimize-app-args es))]
     [(Match e ps es) (Match (optimize-source e) (optimize-source ps) (optimize-source es))]))
 
 ;; Value [Listof Pat] [Listof Expr] Env Defns -> Answer
@@ -92,13 +92,13 @@
     [v v]))
 
 ;; (Listof Expr) REnv Defns -> (Listof Value) | 'err
-(define (optimize-source* es r ds)
+(define (optimize-app-args es)
   (match es
     ['() '()]
     [(cons e es)
-     (match (optimize-source e r ds)
+     (match (optimize-source e)
        ['err 'err]
-       [v (match (optimize-source* es r ds)
+       [v (match (optimize-app-args es)
             ['err 'err]
             [vs (cons v vs)])])]))
 
