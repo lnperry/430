@@ -51,7 +51,7 @@
     [(Let x e1 e2) (Let x (optimize-source e1) (optimize-source e2))]
     [(Lam i xs e) (Lam i xs (optimize-source e))]
     [(App e es) (App (optimize-source e) (optimize-app-args es))]
-    [(Match e ps es) (Match (optimize-source e) (optimize-source ps) (optimize-source es))]))
+    [(Match e ps es) (Match (optimize-source e) ps (map optimize-source es))]))
 
 (define (optimize-ds ds)
   (match ds
@@ -66,6 +66,7 @@
    [(Int  (? integer? v1)) (if v1 e1 e2)]
    [(Char (? char? v1))    (if v1 e1 e2)]
    [_ (If p e1 e2)]))
+
 ;; Value [Listof Pat] [Listof Expr] Env Defns -> Answer
 (define (interp-match v ps es r ds)
   (match* (ps es)
