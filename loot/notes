@@ -1,0 +1,12 @@
+add changes to apply
+make sure not to change meaning and return prim1
+so far changed: add1, sub1, zero?, char?, when they all have literals of the correct type (like add1 is expecting an int, char is expectring a char, etc. otherwise if theres errors then the compiler/interpreter will have to catch them)
+
+question, and design experiment:
+optimization + running > non-optimize + running?
+
+even if it isn't, there is always the trade off of a faster compile/interp time VS time the otpimize step adds 
+
+like we can shave off 3 seconds every time we ran, if we pay 1 second up front to optimize the AST
+
+
