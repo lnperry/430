@@ -132,6 +132,8 @@
 (define (interp-var x r ds)
   (match (lookup r x)
     ['err (match (defns-lookup ds x)
+            ; basically check here if (optimize e) is a a literal
+            ; then i can just interp it, i think?
             [(Defn f xs e) (interp-env (Lam f xs e) '() ds)]
             [#f 'err])]
     [v v]))

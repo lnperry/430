@@ -1,17 +1,12 @@
-add changes to apply
-make sure not to change meaning and return prim1
-so far changed: add1, sub1, zero?, char?, when they all have literals of the correct type (like add1 is expecting an int, char is expectring a char, etc. otherwise if theres errors then the compiler/interpreter will have to catch them)
+so far changed: add1, sub1, zero?, char?, when they all have literals of the correct type (like add1 is expecting an int, char is 
+expectring a char, etc. otherwise if theres errors then the compiler/interpreter will have to catch them)
 
 question, and design experiment:
 optimization + running > non-optimize + running?
-
 even if it isn't, there is always the trade off of a faster compile/interp time VS time the otpimize step adds 
-
 like we can shave off 3 seconds every time we ran, if we pay 1 second up front to optimize the AST
 
 follow along with Jose's example, and just call (optomize-source e) before i call compile or interp
-
-i still need to check if match works, and why are function defintions not optimizing?
 
 care must be taken when doing things like add1 to ensure it actually is indeed an integer
 even though our parser wont produce (Int #\a) we still want to do some AST validation,
@@ -21,7 +16,96 @@ instead of handing them back an invalid AST, i think this is more a design choic
 can setup some python or C scaffolding to run a loop test
 can also compare # of assembly instructions outputted
 
-we need to do some checking for some contracts like zero? that only takes int
-other huh checks take any val, but we only are optimizing for static literals
+we need to do some checking for some contracts like (zero?) that only takes int
+we only checked huh?s like (char?) for the litearls i am optimizing for, not things like vars or boxes other huh? 
 
 (optimize (parse '[(define (f x y) (let ((y (add1 (add1 1)))) (cons x y))) (define (g y) (if (if (integer->char (add1 97)) 1 2) 0 1)) (f (let ((x (box? (add1 7)))) (char? #\a)) ((lambda (x y) (< -100 (- 1 (+ (add1 10) 11)))) (match (char? #f) [#t (= 24 (if (char? "zero") 12 24))] [#f "false"]) (char->integer #\b)))]))
+
+for every huh? check we drop the (type-pred which cuts out 6 instructions)
+
+> (length (compile (parse '((add1 1)))))
+21
+> (length (compile (optimize (parse '((add1 1))))))
+16
+
+> (length (compile (parse '((sub1 1)))))
+21
+> (length (compile (optimize (parse '((sub1 1))))))
+16
+
+> (length (compile (parse '((zero? 1)))))
+25
+> (length (compile (optimize (parse '((zero? 1))))))
+16
+
+> (length (compile (parse '((char? 1)))))
+22
+> (length (compile (optimize (parse '((char? 1))))))
+16
+
+> (length (compile (parse '((char->integer #\a)))))
+22
+> (length (compile (optimize (parse '((char->integer #\a))))))
+16
+
+> (length (compile (parse '((integer->char 98)))))
+33
+> (length (compile (optimize (parse '((integer->char 98))))))
+16
+
+> (length (compile (parse '((empty? 98)))))
+21
+> (length (compile (optimize (parse '((empty? 98))))))
+16
+
+> (length (compile (parse '((cons? 98)))))
+22
+> (length (compile (optimize (parse '((cons? 98))))))
+16
+
+> (length (compile (parse '((box? 98)))))
+22
+> (length (compile (optimize (parse '((box? 98))))))
+16
+
+> (length (compile (parse '((vector? 98)))))
+22
+> (length (compile (optimize (parse '((vector? 98))))))
+16
+
+we don't have to pop anything off the stack, do any asserts, or any jumps if theres errors
+
+> (length (compile (parse '((+ 1 2)))))
+28
+> (length (compile (optimize (parse '((+ 1 2))))))
+16
+
+> (length (compile (parse '((- 1 2)))))
+29
+> (length (compile (optimize (parse '((- 1 2))))))
+16
+
+both equal and less than have to use branching logic, basically cutting out an assembly if branch
+
+> (length (compile (parse '((< 1 2)))))
+32
+> (length (compile (optimize (parse '((< 1 2))))))
+16
+
+> (length (compile (parse '((= 1 2)))))
+32
+> (length (compile (optimize (parse '((= 1 2))))))
+16
+
+> (length (compile (parse '((= 1 (+ 2 3))))))
+44
+> (length (compile (optimize (parse '((= 1 (+ 2 3)))))))
+16
+
+> (length (compile (parse '[(define (f x y) (let ((y (add1 (add1 1)))) (cons x y))) (define (g y) (if (if (integer->char (add1 97)) 1 2) 0 1)) (f (let ((x (box? (add1 7)))) (char? #\a)) ((lambda (x y) (< -100 (- 1 (+ (add1 10) 11)))) (match (char? #f) [#t (= 24 (if (char? "zero") 12 24))] [#f "false"]) (char->integer #\b)))])))
+300
+> (length (compile (optimize (parse '[(define (f x y) (let ((y (add1 (add1 1)))) (cons x y))) (define (g y) (if (if (integer->char (add1 97)) 1 2) 0 1)) (f (let ((x (box? (add1 7)))) (char? #\a)) ((lambda (x y)
+(< -100 (- 1 (+ (add1 10) 11)))) (match (char? #f) [#t (= 24 (if (char? "zero") 12 24))] [#f "false"]) (char->integer #\b)))]))))
+138
+
+
