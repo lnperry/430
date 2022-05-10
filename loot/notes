@@ -23,6 +23,11 @@ we only checked huh?s like (char?) for the litearls i am optimizing for, not thi
 
 for every huh? check we drop the (type-pred which cuts out 6 instructions)
 
+> (length (compile (parse '((if (< 1 (char->integer #\b)) (= (sub1 1) (add1 2)) (vector? (box? (cons? (empty? (char? (integer->char (zero? 0))))))))))))
+126
+> (length (compile (optimize (parse '((if (< 1 (char->integer #\b)) (= (sub1 1) (add1 2)) (vector? (box? (cons? (empty? (char? (integer->char (zero? 0)))))))))))))
+16
+
 > (length (compile (parse '((add1 1)))))
 21
 > (length (compile (optimize (parse '((add1 1))))))
