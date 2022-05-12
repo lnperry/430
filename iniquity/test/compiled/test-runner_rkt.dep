@@ -1,0 +1,1 @@
+("8.0" ta6le ("f758221f8896cb283448edcaacd52a3bc9150615" . "1729bb3d62766558ec8c60e26969b92845e1ac6b") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"rackunit" #"main.rkt"))

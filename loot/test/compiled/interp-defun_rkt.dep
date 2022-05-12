@@ -1,1 +1,0 @@
-("8.2" ta6le ("6127c47c58492576c97ea477efa1161accefae6c" . "f56d6468d153cd926e7a41090a96f13e958a6552") (collects #"loot" #"interp-defun.rkt") (collects #"loot" #"interp-io.rkt") (collects #"loot" #"parse.rkt") (collects #"loot" #"test" #"test-runner.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))

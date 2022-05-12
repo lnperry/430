@@ -1,1 +1,0 @@
-("8.2" ta6le ("fe2b605235bae0224be25d7dac80a07d3910b1f8" . "c9e37eaef5c9b20739751ca1d9b5c9b8ca7ae1e6") (collects #"ffi" #"unsafe.rkt") (collects #"loot" #"types.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (indirect collects #"racket" #"match" #"gen-match.rkt") (indirect collects #"racket" #"match" #"parse.rkt"))
