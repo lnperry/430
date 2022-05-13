@@ -35,3 +35,7 @@ clean:
 
 test: example.run
 	@test "$(shell ./example.run)" = "$(shell racket example.rkt)"
+
+run:
+	./count-assembly.sh example
+	./optimize-test.sh example
